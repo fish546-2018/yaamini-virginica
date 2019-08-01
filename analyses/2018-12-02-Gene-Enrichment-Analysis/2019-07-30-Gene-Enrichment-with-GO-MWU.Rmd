@@ -79,13 +79,103 @@ head(allTestedGOterms) #Confirm changes
 ```
 
 ```{r}
-write.csv(allTestedGOterms, "2019-07-30-All-Tested-Loci-Uniprot-GOTerms.csv") #Save ordered file
+write.csv(allTestedGOterms, "2019-07-30-All-Tested-Loci-Uniprot-GOTerms.csv", quote = FALSE, row.names = FALSE) #Save ordered file
 ```
 
 ```{bash}
 #Sort a file by the Genbank column (--key = 9,9) and only retain unique lines (--unique). Save output to a new file
-sort --unique --key=1,1 Zostera-blast-annot-withGeneID.tab \
-> Zostera-blast-annot-withGeneID-noIsoforms.tab
+sort --unique --key=10,10 2019-07-30-All-Tested-Loci-Uniprot-GOTerms.csv \
+> 2019-07-30-All-Tested-Loci-Uniprot-GOTerms-Unique.csv
+```
+
+```{bash}
+head -n4 2019-07-30-All-Tested-Loci-Uniprot-GOTerms-Unique.csv
+```
+
+# Create GO-MWU inputs
+
+```{r}
+allTestedGOtermsCondensed <- read.csv("2019-07-30-All-Tested-Loci-Uniprot-GOTerms-Unique.csv", header = TRUE) #Import file with one line per gene
+head(allTestedGOtermsCondensed, 2) #Confirm import
+```
+
+## GO annotations table
+
+The first table needs to be a tab-delimited file with one column for genes and one column for GOterms.
+
+```{r}
+goAnnotations <- data.frame(allTestedGOtermsCondensed$Genbank,
+                            allTestedGOtermsCondensed$GO) #Create a new dataframe with Genbank and GO columns
+head(goAnnotations) #Confirm format is good. It is.
+```
+
+```{r}
+write.table(goAnnotations, "2019-07-30-allTested-GO-Annotations-Table.tab", sep = "\t", col.names = FALSE, row.names = FALSE, quote = FALSE) #Save file
+```
+
+```{bash}
+head 2019-07-30-allTested-GO-Annotations-Table.tab #Confirm formatting was retained
+```
+
+## Table of significance measures
+
+This table is a .csv file with one column for gene IDs and another for a continuous significance measure. All genes need to be included, not just those with significant DML. Similar to the GO-MWU example, I will use signed negative log p-values modified from `methylKit` output. Hypomethylated loci will have negative p-values, and hypermethylated loci will have positive p-values.
+
+### Subset table
+
+```{r}
+sigMeasures <- data.frame("gene" = allTestedGOtermsCondensed$Genbank,
+                          "logP" = log(allTestedGOtermsCondensed$pvalue),
+                          "meth.diff" = allTestedGOtermsCondensed$meth.diff) #Subset Genbank ID, log(p-value), and meth.diff
+head(sigMeasures) #Confirm subset
+```
+
+### Correct p-values for hypermethylated loci
+
+```{r}
+sigMeasuresHyper <- subset(x = sigMeasures, subset = sigMeasures$meth.diff >= 0) #Subset hypermethylated loci. Differences of 0 will need positive p-values as well.
+range(sigMeasuresHyper$meth.diff) #Confirm subset
+```
+
+```{r}
+range(sigMeasuresHyper$logP) #Look at range of values for hypermethylated loci. All values are negative, so they need to be made positive.
+```
+
+```{r}
+sigMeasuresHyper$signLogP <- -1 * sigMeasuresHyper$logP #Multiply values by -1
+head(sigMeasuresHyper) #Confirm changes
+```
+
+### Correct p-values for hypomethylated loci
+
+```{r}
+sigMeasuresHypo <- subset(x = sigMeasures, subset = sigMeasures$meth.diff < 0) #Subset hypomethylated loci
+range(sigMeasuresHypo$meth.diff) #Confirm subset
+```
+
+```{r}
+range(sigMeasuresHypo$logP) #Look at range of p-values. All of these are already negative, so there's no need to modify it
+```
+
+```{r}
+sigMeasuresHypo$signLogP <- sigMeasuresHypo$logP #Copy logP to a new columns for consistency
+head(sigMeasuresHypo) #Confirm changes
+```
+
+### Combine tables with corrected p-values
+
+```{r}
+sigMeasuresCorrected <- rbind(sigMeasuresHyper, sigMeasuresHypo) #Combine dataframes
+sigMeasuresCorrected <- sigMeasuresCorrected[,-c(2:3)] #Remove unnecessary columns
+head(sigMeasuresCorrected) #Confirm changes
+```
+
+```{r}
+write.csv(sigMeasuresCorrected, "2019-07-30-allTested-Table-of-Significance-Measures.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
+```{bash}
+head 2019-07-30-allTested-Table-of-Significance-Measures.csv #Confirm formatting is good. It is.
 ```
 
 
@@ -94,11 +184,6 @@ sort --unique --key=1,1 Zostera-blast-annot-withGeneID.tab \
 
 
 
-# GO annotations table
-
-The first table needs to be a tab-delimited file with one column for genes and one column for GOterms.
-
-# Table of significance measures
 
 
 
