@@ -84,6 +84,8 @@ write.csv(allTestedGOterms, "2019-07-30-All-Tested-Loci-Uniprot-GOTerms.csv") #S
 
 ```{bash}
 #Sort a file by the Genbank column (--key = 9,9) and only retain unique lines (--unique). Save output to a new file
+sort --unique --key=1,1 Zostera-blast-annot-withGeneID.tab \
+> Zostera-blast-annot-withGeneID-noIsoforms.tab
 ```
 
 
