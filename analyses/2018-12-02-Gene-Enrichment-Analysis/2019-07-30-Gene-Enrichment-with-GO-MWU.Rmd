@@ -341,6 +341,24 @@ head(parentGOCCCounts) #Confirm counts
 write.csv(parentGOCCCounts, "2019-07-30-allTested-Parent-GOSlim-Frequency-CC.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
+#### Differentially methylated loci
+
+```{r}
+parentGOCCCondensed <- merge(x = condensedDML, y = parentGOCC, by = "Genbank") #Merge condensed DML with parentGOCC
+head(parentGOCCCondensed) #Confirm merge
+```
+
+```{r}
+parentGOCCCondensedCounts <- as.data.frame(table(parentGOCCCondensed$name)) #Count the frequency of each GOslim term
+colnames(parentGOCCCondensedCounts) <- c("parentGOslim", "frequency") #Rename columns
+parentGOCCCondensedCounts <- subset(parentGOCCCondensedCounts, subset = frequency > 0) #Remove residual factors
+head(parentGOCCCondensedCounts) #Confirm counts
+```
+
+```{r}
+write.csv(parentGOCCCondensedCounts, "2019-07-30-condensedDML-Parent-GOSlim-Frequency-CC.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
 ##### Hypermethylated loci
 
 ```{r}
@@ -415,6 +433,24 @@ head(parentGOMFCounts) #Confirm counts
 
 ```{r}
 write.csv(parentGOMFCounts, "2019-07-30-allTested-Parent-GOSlim-Frequency-MF.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
+#### Differentially methylated loci
+
+```{r}
+parentGOMFCondensed <- merge(x = condensedDML, y = parentGOMF, by = "Genbank") #Merge condensed DML with parentGOMF
+head(parentGOMFCondensed) #Confirm merge
+```
+
+```{r}
+parentGOMFCondensedCounts <- as.data.frame(table(parentGOMFCondensed$name)) #Count the frequency of each GOslim term
+colnames(parentGOMFCondensedCounts) <- c("parentGOslim", "frequency") #Rename columns
+parentGOMFCondensedCounts <- subset(parentGOMFCondensedCounts, subset = frequency > 0) #Remove residual factors
+head(parentGOMFCondensedCounts) #Confirm counts
+```
+
+```{r}
+write.csv(parentGOMFCondensedCounts, "2019-07-30-condensedDML-Parent-GOSlim-Frequency-MF.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
 ##### Hypermethylated loci
