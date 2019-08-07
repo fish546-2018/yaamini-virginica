@@ -528,10 +528,33 @@ gomwuStats(input, goDatabase, goAnnotations, goDivision,
 # There are no GO terms pass 10% FDR. The output is also identical to the previous GO-MWU output with signed log p-values, so I won't proceed down this route with other GO divisions.
 ```
 
+# Collecting ReVIGO inputs
 
+Since I have p-values and GOterms for each gene, I can use that information in ReVIGO to generate some plots. I will need to reformat inputs beforehand.
 
+## Multiple p-values per gene
 
+```{r}
+allTestedGOtermsReVIGO <- data.frame("pvalue" = allTestedGOterms$pvalue,
+                                     "GO" = allTestedGOterms$GO) #Save p-values and GOterms separately
+head(allTestedGOtermsReVIGO) #Confirm dataframe creation
+```
 
+```{r}
+write.csv(allTestedGOtermsReVIGO, "2019-07-30-All-Tested-Loci-ReVIGO-Input.csv", quote = FALSE, row.names = FALSE) #Save file. I will use text-to-columns in R to separate GOterms by semicolons and match one GOterm per p-value.
+```
+
+## One p-value per gene
+
+```{r}
+allTestedGOtermsCondensedReVIGO <- data.frame("pvalue" = allTestedGOtermsCondensed$pvalue,
+                                              "GO" = allTestedGOtermsCondensed$GO) #Save p-values and GOterms separately
+head(allTestedGOtermsCondensedReVIGO) #Confirm dataframe creation
+```
+
+```{r}
+write.csv(allTestedGOtermsCondensedReVIGO,  "2019-07-30-All-Tested-Loci-Condensed-ReVIGO-Input.csv", quote = FALSE, row.names = FALSE) #Save file. I will use text-to-columns in R to separate GOterms by semicolons and match one GOterm per p-value.
+```
 
 
 
