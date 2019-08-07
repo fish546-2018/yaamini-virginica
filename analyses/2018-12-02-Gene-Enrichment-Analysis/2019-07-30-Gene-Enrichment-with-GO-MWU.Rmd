@@ -130,6 +130,15 @@ sigMeasures <- data.frame("gene" = allTestedGOtermsCondensed$Genbank,
 head(sigMeasures) #Confirm subset
 ```
 
+```{r}
+sigMeasuresUncorrected <- sigMeasures[,c(1:2)] #Keep first two columns to see if GO-MWU provides different results with uncorrected p-values
+head(sigMeasuresUncorrected) #Confirm subset
+```
+
+```{r}
+write.csv(sigMeasuresUncorrected, "2019-07-30-allTested-Table-of-Significance-Measures-Uncorrected.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
 ### Correct p-values for hypermethylated loci
 
 ```{r}
@@ -182,9 +191,11 @@ head 2019-07-30-allTested-Table-of-Significance-Measures.csv #Confirm formatting
 
 These commands were copied from the GO-MWU.R file in the GO-MWU Github repository.
 
-## Biological processes
+## Signed log p-values
 
-### Edit input variables
+### Biological processes
+
+#### Edit input variables
 
 ```{r}
 input="2019-07-30-allTested-Table-of-Significance-Measures.csv" # two columns of comma-separated values: gene id, continuous measure of significance. To perform standard GO enrichment analysis based on Fisher's exact test, use binary measure (0 or 1, i.e., either sgnificant or not).
@@ -194,7 +205,7 @@ goDivision="BP" # BP for biological processes
 source("gomwu.functions.R")
 ```
 
-### Run GO-MWU
+#### Run GO-MWU
 
 ```{r}
 # Calculating stats. It might take ~3 min for MF and BP. Do not rerun it if you just want to replot the data with different cutoffs, go straight to gomwuPlot. If you change any of the numeric values below, delete the files that were generated in previos runs first.
@@ -206,11 +217,11 @@ gomwuStats(input, goDatabase, goAnnotations, goDivision,
 # There are no GO terms pass 10% FDR.
 ```
 
-### Describe parent GOslim terms
+#### Describe parent GOslim terms
 
 Even though there are no significantly enriched terms, I want to describe the parent GOslim categories GO-MWU used to sort my data.
 
-#### All tested loci
+##### All tested loci
 
 ```{r}
 parentGOBP <- read.delim("BP_2019-07-30-allTested-Table-of-Significance-Measures.csv", header = TRUE) #Import GO-MWU output file with individual genes and associated GOslim term. Even though it is a .csv extension, it is a tab-delimited file
@@ -228,7 +239,7 @@ head(parentGOBPCounts) #Confirm counts
 write.csv(parentGOBPCounts, "2019-07-30-allTested-Parent-GOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-#### Differentially methylated loci
+##### Differentially methylated loci
 
 GO-MWU takes all loci into account, but there may be some differences in parental GOslim terms if I only look at differentially methylated loci. I will pull loci that have at least a 50% difference between treatment, p-value < 0.05, and q-value < 0.01 from my condensed list (only one DML per gene) so it is comparable with the list I generated for all tested loci above.
 
@@ -253,7 +264,7 @@ head(parentGOBPCondensedCounts) #Confirm counts
 write.csv(parentGOBPCondensedCounts, "2019-07-30-condensedDML-Parent-GOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-##### Hypermethylated loci
+###### Hypermethylated loci
 
 The division between hypermethylated and hypomethylated biological processes may be interesting too.
 
@@ -278,7 +289,7 @@ head(parentGOBPCondensedHyperCounts) #Confirm counts
 write.csv(parentGOBPCondensedHyperCounts, "2019-07-30-condensedDMLHyper-Parent-GOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-##### Hypomethylated loci
+###### Hypomethylated loci
 
 ```{r}
 condensedDMLHypo <- subset(condensedDML, subset = meth.diff < 0) #Subset hypermethylated loci
@@ -301,15 +312,15 @@ head(parentGOBPCondensedHypoCounts) #Confirm counts
 write.csv(parentGOBPCondensedHypoCounts, "2019-07-30-condensedDMLHypo-Parent-GOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-## Cellular components
+### Cellular components
 
-### Edit input variables
+#### Edit input variables
 
 ```{r}
 goDivision="CC" # CC for cellular components. All other inputs are the same.
 ```
 
-### Run GO-MWU
+#### Run GO-MWU
 
 ```{r}
 # Calculating stats. It might take ~3 min for MF and BP. Do not rerun it if you just want to replot the data with different cutoffs, go straight to gomwuPlot. If you change any of the numeric values below, delete the files that were generated in previos runs first.
@@ -321,9 +332,9 @@ gomwuStats(input, goDatabase, goAnnotations, goDivision,
 # There are no GO terms pass 10% FDR.
 ```
 
-### Describe parent GOslim terms
+#### Describe parent GOslim terms
 
-#### All tested loci
+##### All tested loci
 
 ```{r}
 parentGOCC <- read.delim("CC_2019-07-30-allTested-Table-of-Significance-Measures.csv", header = TRUE) #Import GO-MWU output file with individual genes and associated GOslim term. Even though it is a .csv extension, it is a tab-delimited file
@@ -341,7 +352,7 @@ head(parentGOCCCounts) #Confirm counts
 write.csv(parentGOCCCounts, "2019-07-30-allTested-Parent-GOSlim-Frequency-CC.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-#### Differentially methylated loci
+##### Differentially methylated loci
 
 ```{r}
 parentGOCCCondensed <- merge(x = condensedDML, y = parentGOCC, by = "Genbank") #Merge condensed DML with parentGOCC
@@ -359,7 +370,7 @@ head(parentGOCCCondensedCounts) #Confirm counts
 write.csv(parentGOCCCondensedCounts, "2019-07-30-condensedDML-Parent-GOSlim-Frequency-CC.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-##### Hypermethylated loci
+###### Hypermethylated loci
 
 ```{r}
 parentGOCCCondensedHyper <- merge(x = condensedDMLHyper, y = parentGOCC, by = "Genbank") #Merge condensed DML with parentGOCC
@@ -377,7 +388,7 @@ head(parentGOCCCondensedHyperCounts) #Confirm counts
 write.csv(parentGOCCCondensedHyperCounts, "2019-07-30-condensedDMLHyper-Parent-GOSlim-Frequency-CC.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-##### Hypomethylated loci
+###### Hypomethylated loci
 
 ```{r}
 parentGOCCCondensedHypo <- merge(x = condensedDMLHypo, y = parentGOCC, by = "Genbank") #Merge condensed DML with parentGOCC
@@ -395,15 +406,15 @@ head(parentGOCCCondensedHypoCounts) #Confirm counts
 write.csv(parentGOCCCondensedHypoCounts, "2019-07-30-condensedDMLHypo-Parent-GOSlim-Frequency-CC.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-## Molecular function
+### Molecular function
 
-### Edit input variables
+#### Edit input variables
 
 ```{r}
 goDivision="MF" # MF for molecular function. All other inputs are the same.
 ```
 
-### Run GO-MWU
+#### Run GO-MWU
 
 ```{r}
 # Calculating stats. It might take ~3 min for MF and BP. Do not rerun it if you just want to replot the data with different cutoffs, go straight to gomwuPlot. If you change any of the numeric values below, delete the files that were generated in previos runs first.
@@ -415,9 +426,9 @@ gomwuStats(input, goDatabase, goAnnotations, goDivision,
 # There are no GO terms pass 10% FDR.
 ```
 
-### Describe parent GOslim terms
+#### Describe parent GOslim terms
 
-#### All tested loci
+##### All tested loci
 
 ```{r}
 parentGOMF <- read.delim("MF_2019-07-30-allTested-Table-of-Significance-Measures.csv", header = TRUE) #Import GO-MWU output file with individual genes and associated GOslim term. Even though it is a .csv extension, it is a tab-delimited file
@@ -435,7 +446,7 @@ head(parentGOMFCounts) #Confirm counts
 write.csv(parentGOMFCounts, "2019-07-30-allTested-Parent-GOSlim-Frequency-MF.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-#### Differentially methylated loci
+##### Differentially methylated loci
 
 ```{r}
 parentGOMFCondensed <- merge(x = condensedDML, y = parentGOMF, by = "Genbank") #Merge condensed DML with parentGOMF
@@ -453,7 +464,7 @@ head(parentGOMFCondensedCounts) #Confirm counts
 write.csv(parentGOMFCondensedCounts, "2019-07-30-condensedDML-Parent-GOSlim-Frequency-MF.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-##### Hypermethylated loci
+###### Hypermethylated loci
 
 ```{r}
 parentGOMFCondensedHyper <- merge(x = condensedDMLHyper, y = parentGOMF, by = "Genbank") #Merge condensed DML with parentGOMF
@@ -471,7 +482,7 @@ head(parentGOMFCondensedHyperCounts) #Confirm counts
 write.csv(parentGOMFCondensedHyperCounts, "2019-07-30-condensedDMLHyper-Parent-GOSlim-Frequency-MF.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
-##### Hypomethylated loci
+###### Hypomethylated loci
 
 ```{r}
 parentGOMFCondensedHypo <- merge(x = condensedDMLHypo, y = parentGOMF, by = "Genbank") #Merge condensed DML with parentGOMF
@@ -488,3 +499,41 @@ head(parentGOMFCondensedHypoCounts) #Confirm counts
 ```{r}
 write.csv(parentGOMFCondensedHypoCounts, "2019-07-30-condensedDMLHypo-Parent-GOSlim-Frequency-MF.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
+
+## Uncorrected log p-values
+
+I used signed log p-values since that was the GO-MWU example, but I also want to see what happens if I use uncorrected log p-values. This would not take into account hyper- and hypomethylation, but just focus on significant differences in methylation.
+
+### Biological processes
+
+#### Edit input variables
+
+```{r}
+input="2019-07-30-allTested-Table-of-Significance-Measures-Uncorrected.csv" # two columns of comma-separated values: gene id, continuous measure of significance. To perform standard GO enrichment analysis based on Fisher's exact test, use binary measure (0 or 1, i.e., either sgnificant or not).
+goAnnotations="2019-07-30-allTested-GO-Annotations-Table.tab" # two-column, tab-delimited, one line per gene, multiple GO terms separated by semicolon.
+goDatabase="go.obo" # download from http://www.geneontology.org/GO.downloads.ontology.shtml
+goDivision="BP" # BP for biological processes
+source("gomwu.functions.R")
+```
+
+#### Run GO-MWU
+
+```{r}
+# Calculating stats. It might take ~3 min for MF and BP. Do not rerun it if you just want to replot the data with different cutoffs, go straight to gomwuPlot. If you change any of the numeric values below, delete the files that were generated in previos runs first.
+gomwuStats(input, goDatabase, goAnnotations, goDivision,
+	perlPath="perl", # replace with full path to perl executable if it is not in your system's PATH already
+	largest=0.1,  # a GO category will not be considered if it contains more than this fraction of the total number of genes
+	smallest=5,   # a GO category should contain at least this many genes to be considered
+	clusterCutHeight=0.25) # threshold for merging similar (gene-sharing) terms. See README for details.
+# There are no GO terms pass 10% FDR. The output is also identical to the previous GO-MWU output with signed log p-values, so I won't proceed down this route with other GO divisions.
+```
+
+
+
+
+
+
+
+
+
+
