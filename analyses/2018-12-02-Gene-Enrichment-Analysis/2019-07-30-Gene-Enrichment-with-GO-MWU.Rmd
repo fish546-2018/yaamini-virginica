@@ -458,7 +458,7 @@ write.csv(parentGOMFCounts, "2019-07-30-allTested-Parent-GOSlim-Frequency-MF.csv
 ##### Differentially methylated loci
 
 ```{r}
-parentGOMFCondensed <- merge(x = DMLGenbank, y = parentGOMF, by = "Genbank") #Merge condensed DML with parentGOMF
+parentGOMFCondensed <- unique(merge(x = DMLGenbank, y = parentGOMF, by = "Genbank")) #Merge condensed DML with parentGOMF
 head(parentGOMFCondensed) #Confirm merge
 ```
 
@@ -476,7 +476,7 @@ write.csv(parentGOMFCondensedCounts, "2019-07-30-condensedDML-Parent-GOSlim-Freq
 ###### Hypermethylated loci
 
 ```{r}
-parentGOMFCondensedHyper <- merge(x = condensedDMLHyper, y = parentGOMF, by = "Genbank") #Merge condensed DML with parentGOMF
+parentGOMFCondensedHyper <- unique(merge(x = condensedDMLHyper, y = parentGOMF, by = "Genbank")) #Merge condensed DML with parentGOMF
 head(parentGOMFCondensedHyper) #Confirm merge
 ```
 
@@ -494,7 +494,7 @@ write.csv(parentGOMFCondensedHyperCounts, "2019-07-30-condensedDMLHyper-Parent-G
 ###### Hypomethylated loci
 
 ```{r}
-parentGOMFCondensedHypo <- merge(x = condensedDMLHypo, y = parentGOMF, by = "Genbank") #Merge condensed DML with parentGOMF
+parentGOMFCondensedHypo <- unique(merge(x = condensedDMLHypo, y = parentGOMF, by = "Genbank")) #Merge condensed DML with parentGOMF
 head(parentGOMFCondensedHypo) #Confirm merge
 ```
 
@@ -534,7 +534,7 @@ gomwuStats(input, goDatabase, goAnnotations, goDivision,
 	largest=0.1,  # a GO category will not be considered if it contains more than this fraction of the total number of genes
 	smallest=5,   # a GO category should contain at least this many genes to be considered
 	clusterCutHeight=0.25) # threshold for merging similar (gene-sharing) terms. See README for details.
-# There are no GO terms pass 10% FDR. The output is also identical to the previous GO-MWU output with signed log p-values, so I won't proceed down this route with other GO divisions.
+# There are no GO terms pass 10% FDR, which is the same as the signed log p-value method. The outputs may be different, so I have to investigate that.
 ```
 
 # Collecting ReVIGO inputs
