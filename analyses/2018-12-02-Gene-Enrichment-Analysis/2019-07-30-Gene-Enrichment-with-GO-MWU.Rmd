@@ -565,42 +565,6 @@ gomwuStats(input, goDatabase, goAnnotations, goDivision,
 # There are no GO terms pass 10% FDR, which is the same as the signed log p-value method. The outputs may be different, so I have to investigate that.
 ```
 
-# GO-MWU for gene description
-
-I used GO-MWU to perform a gene enrichemnt, but tdid not find any significantly enriched terms. I will use GO-MWU again, but with genes with DML only, to see if it helps with describing the genes with DML in them.
-
-## Prepare inputs
-
-```{r}
-DMLGOTerms <- data.frame("Genbank" = DMLGeneAnnotation$Genbank,
-                         "pvalue" = DMLGeneAnnotation$pvalue,
-                         "GO" = DMLGeneAnnotation$GO.ID) #Subset columns needed for GO-MWU
-head(DMLGOTerms) #Confirm subset
-```
-
-```{r}
-attach(DMLGOTerms) #Attach dataframe
-DMLGOTerms <- DMLGOTerms[order(gene, pvalue),] #Sort by gene ID, then p-value
-detach(DMLGOTerms) #Detatch dataframe
-head(DMLGOTerms) #Confirm changes
-```
-
-```{r}
-write.csv(allTestedGOterms, "2019-07-30-All-Tested-Loci-Uniprot-GOTerms.csv", quote = FALSE, row.names = FALSE) #Save ordered file
-```
-
-```{bash}
-#Sort a file by the Genbank column (--key = 9,9) and only retain unique lines (--unique). Save output to a new file
-sort --unique --key=10,10 2019-07-30-All-Tested-Loci-Uniprot-GOTerms.csv \
-> 2019-07-30-All-Tested-Loci-Uniprot-GOTerms-Unique.csv
-```
-
-```{bash}
-head -n4 2019-07-30-All-Tested-Loci-Uniprot-GOTerms-Unique.csv
-```
-
-
-
 # Collecting ReVIGO inputs
 
 Since I have p-values and GOterms for each gene, I can use that information in ReVIGO to generate some plots. I will need to reformat inputs beforehand.
@@ -626,10 +590,7 @@ head(allTestedGOtermsCondensedReVIGO) #Confirm dataframe creation
 ```
 
 ```{r}
-write.csv(allTestedGOtermsCondensedReVIGO,  "2019-07-30-All-Tested-Loci-Condensed-ReVIGO-Input.csv", quote = FALSE, row.names = FALSE) #Save file. I will use text-to-columns in R to separate GOterms by semicolons and match one GOterm per p-value.
+write.csv(allTestedGOtermsCondensedReVIGO, "2019-07-30-All-Tested-Loci-Condensed-ReVIGO-Input.csv", quote = FALSE, row.names = FALSE) #Save file. I will use text-to-columns in R to separate GOterms by semicolons and match one GOterm per p-value.
 ```
-
-
-
 
 
