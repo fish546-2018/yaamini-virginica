@@ -1,9 +1,13 @@
 parentGOslim,frequency
 chromosomal part,1
-cytoskeletal part,2
-intracellular non-membrane-bounded organelle,2
+cytoplasm,4
+cytoskeletal part,3
+cytosol,1
+intracellular non-membrane-bounded organelle,3
 membrane part,1
 membrane protein complex,1
 nucleolar part,1
-ribonucleoprotein complex,1
+nucleoplasm,1
+plasma membrane bounded cell projection,1
+ribonucleoprotein complex,2
 vacuole,1
