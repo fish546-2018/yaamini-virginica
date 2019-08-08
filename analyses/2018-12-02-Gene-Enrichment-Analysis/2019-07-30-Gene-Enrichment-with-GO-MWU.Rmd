@@ -258,8 +258,12 @@ head(DMLGenbank) #Confirm dataframe creation
 ```
 
 ```{r}
-parentGOBPDML <- unique(merge(x = DMLGenbank, y = parentGOBP, by = "Genbank")) #Merge parent GOslim terms and DML information by Genbank ID. Keep only unique entries. This will allow me to retain multiple DML per gene, but remove any merging artifacts.
-head(parentGOBPDML) #Confirm merge. There are 59 entries, so much of the DML may be in uncharacterized transcripts.
+parentGOBPDML <- unique(merge(x = DMLGenbank, y = parentGOBP, by = "Genbank", all.x = TRUE)) #Merge parent GOslim terms and DML information by Genbank ID. Keep only unique entries. This will allow me to retain multiple DML per gene, but remove any merging artifacts. Keep rows that don't have matching GOterms from GO-MWU just in case.
+head(parentGOBPDML) #Confirm merge. There are several entries without any matching information from GO-MWU.
+```
+
+```{r}
+sum(is.na(parentGOBPDML$name)) #Count how many genes with DML do not have GO-MWU entries.
 ```
 
 ```{r}
@@ -283,8 +287,12 @@ range(condensedDMLHyper$meth.diff) #Confirm subset
 ```
 
 ```{r}
-parentGOBPCondensedHyper <- unique(merge(x = condensedDMLHyper, y = parentGOBP, by = "Genbank")) #Merge condensed DML with parentGOBP
+parentGOBPCondensedHyper <- unique(merge(x = condensedDMLHyper, y = parentGOBP, by = "Genbank", all.x = TRUE)) #Merge condensed DML with parentGOBP
 head(parentGOBPCondensedHyper) #Confirm merge
+```
+
+```{r}
+sum(is.na(parentGOBPCondensedHyper$name))
 ```
 
 ```{r}
@@ -306,8 +314,12 @@ range(condensedDMLHypo$meth.diff) #Confirm subset
 ```
 
 ```{r}
-parentGOBPCondensedHypo <- unique(merge(x = condensedDMLHypo, y = parentGOBP, by = "Genbank")) #Merge condensed DML with parentGOBP
+parentGOBPCondensedHypo <- unique(merge(x = condensedDMLHypo, y = parentGOBP, by = "Genbank", all.x = TRUE)) #Merge condensed DML with parentGOBP
 head(parentGOBPCondensedHypo) #Confirm merge
+```
+
+```{r}
+sum(is.na(parentGOBPCondensedHypo$name)) #Count genes with DML that do not have GO-MWU terms associated with them
 ```
 
 ```{r}
@@ -364,8 +376,12 @@ write.csv(parentGOCCCounts, "2019-07-30-allTested-Parent-GOSlim-Frequency-CC.csv
 ##### Differentially methylated loci
 
 ```{r}
-parentGOCCCondensed <- unique(merge(x = DMLGenbank, y = parentGOCC, by = "Genbank")) #Merge condensed DML with parentGOCC
+parentGOCCCondensed <- unique(merge(x = DMLGenbank, y = parentGOCC, by = "Genbank", all.x = TRUE)) #Merge condensed DML with parentGOCC
 head(parentGOCCCondensed) #Confirm merge
+```
+
+```{r}
+sum(is.na(parentGOCCCondensed$name)) #Count how many genes with DML do not have GO-MWU characterizations
 ```
 
 ```{r}
@@ -458,8 +474,12 @@ write.csv(parentGOMFCounts, "2019-07-30-allTested-Parent-GOSlim-Frequency-MF.csv
 ##### Differentially methylated loci
 
 ```{r}
-parentGOMFCondensed <- unique(merge(x = DMLGenbank, y = parentGOMF, by = "Genbank")) #Merge condensed DML with parentGOMF
+parentGOMFCondensed <- unique(merge(x = DMLGenbank, y = parentGOMF, by = "Genbank", all.x = TRUE)) #Merge condensed DML with parentGOMF
 head(parentGOMFCondensed) #Confirm merge
+```
+
+```{r}
+sum(is.na(parentGOMFCondensed$name)) #Count how many genes with DML do not have GO-MWU characterizations
 ```
 
 ```{r}
@@ -476,8 +496,12 @@ write.csv(parentGOMFCondensedCounts, "2019-07-30-condensedDML-Parent-GOSlim-Freq
 ###### Hypermethylated loci
 
 ```{r}
-parentGOMFCondensedHyper <- unique(merge(x = condensedDMLHyper, y = parentGOMF, by = "Genbank")) #Merge condensed DML with parentGOMF
+parentGOMFCondensedHyper <- unique(merge(x = condensedDMLHyper, y = parentGOMF, by = "Genbank", all.x = TRUE)) #Merge condensed DML with parentGOMF
 head(parentGOMFCondensedHyper) #Confirm merge
+```
+
+```{r}
+sum(is.na(parentGOMFCondensedHyper$name)) #Count DML without GO-MWU parent GOterms for corresponding genes
 ```
 
 ```{r}
@@ -494,8 +518,12 @@ write.csv(parentGOMFCondensedHyperCounts, "2019-07-30-condensedDMLHyper-Parent-G
 ###### Hypomethylated loci
 
 ```{r}
-parentGOMFCondensedHypo <- unique(merge(x = condensedDMLHypo, y = parentGOMF, by = "Genbank")) #Merge condensed DML with parentGOMF
+parentGOMFCondensedHypo <- unique(merge(x = condensedDMLHypo, y = parentGOMF, by = "Genbank", all.x = TRUE)) #Merge condensed DML with parentGOMF
 head(parentGOMFCondensedHypo) #Confirm merge
+```
+
+```{r}
+sum(is.na(parentGOMFCondensedHypo$name)) #Count DML without parent GOterms from GO-MWU for corresponding genes
 ```
 
 ```{r}
@@ -536,6 +564,42 @@ gomwuStats(input, goDatabase, goAnnotations, goDivision,
 	clusterCutHeight=0.25) # threshold for merging similar (gene-sharing) terms. See README for details.
 # There are no GO terms pass 10% FDR, which is the same as the signed log p-value method. The outputs may be different, so I have to investigate that.
 ```
+
+# GO-MWU for gene description
+
+I used GO-MWU to perform a gene enrichemnt, but tdid not find any significantly enriched terms. I will use GO-MWU again, but with genes with DML only, to see if it helps with describing the genes with DML in them.
+
+## Prepare inputs
+
+```{r}
+DMLGOTerms <- data.frame("Genbank" = DMLGeneAnnotation$Genbank,
+                         "pvalue" = DMLGeneAnnotation$pvalue,
+                         "GO" = DMLGeneAnnotation$GO.ID) #Subset columns needed for GO-MWU
+head(DMLGOTerms) #Confirm subset
+```
+
+```{r}
+attach(DMLGOTerms) #Attach dataframe
+DMLGOTerms <- DMLGOTerms[order(gene, pvalue),] #Sort by gene ID, then p-value
+detach(DMLGOTerms) #Detatch dataframe
+head(DMLGOTerms) #Confirm changes
+```
+
+```{r}
+write.csv(allTestedGOterms, "2019-07-30-All-Tested-Loci-Uniprot-GOTerms.csv", quote = FALSE, row.names = FALSE) #Save ordered file
+```
+
+```{bash}
+#Sort a file by the Genbank column (--key = 9,9) and only retain unique lines (--unique). Save output to a new file
+sort --unique --key=10,10 2019-07-30-All-Tested-Loci-Uniprot-GOTerms.csv \
+> 2019-07-30-All-Tested-Loci-Uniprot-GOTerms-Unique.csv
+```
+
+```{bash}
+head -n4 2019-07-30-All-Tested-Loci-Uniprot-GOTerms-Unique.csv
+```
+
+
 
 # Collecting ReVIGO inputs
 
