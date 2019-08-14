@@ -504,3 +504,14 @@ analyses/2018-12-02-Gene-Enrichment-Analysis/uniprot-reviewed_yes.tab
 analyses/2018-12-02-Gene-Enrichment-Analysis/2019-06-20-mRNA-Gene-Background-Uniprot.csv
 analyses/2018-12-02-Gene-Enrichment-Analysis/2019-07-30-All-Tested-Loci-Uniprot-GOTerms.csv
 analyses/2018-12-02-Gene-Enrichment-Analysis/2019-07-30-All-Tested-Loci-ReVIGO-Input.csv
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_9_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_8_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_7_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_6_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_5_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_4_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_3_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_2_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_10_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov.gz
+analyses/2019-08-14-Differentially-Methylated-Genes/C_virginica-3.0_genomic.fa
