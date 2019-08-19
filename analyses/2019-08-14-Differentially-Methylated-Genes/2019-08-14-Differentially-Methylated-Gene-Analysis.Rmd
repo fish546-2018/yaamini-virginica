@@ -19,9 +19,9 @@ knitr::opts_chunk$set(echo = TRUE)
 sessionInfo()
 ```
 
-# Import and format gene locations and annotation
+# Create annotated gene list
 
-## Import gene track
+## Add gene track
 
 ```{r}
 geneList <- read.delim("../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_gene_sorted_yrv.gff3", header = FALSE) #Import gene gff3
@@ -56,7 +56,7 @@ colnames(geneList) <- c("gene-chr", "Gnomon", "gene", "gene-start", "gene-end", 
 head(geneList) #Confirm merge
 ```
 
-## Import mRNA track
+## Add mRNA track
 
 ```{r}
 mRNAList <- read.delim("../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_mRNA_yrv.gff3", header = FALSE) #Import mRNA track
@@ -137,20 +137,22 @@ write.csv(geneAnnotations, "2019-08-14-All-Annotated-Gene-and-mRNA.csv", quote =
 ```
 
 ```{bash}
-#Sort the file by the gene start position (--key = 2,2) and only retain unique lines (--unique). Save output to a new file
-sort --unique --key=2,2 2019-08-14-All-Annotated-Gene-and-mRNA.csv \
+#For the 6th field [$6] (gene ID), remove all duplicate entries in a csv file (-F","). These entries are saved and can be extracted as a different output if needed. 
+#Save output to a new file
+awk -F"," '!x[$6]++' 2019-08-14-All-Annotated-Gene-and-mRNA.csv \
 > 2019-08-14-All-Annotated-Gene-and-mRNA-Unique.csv
 ```
 
 ```{bash}
-head -n5 2019-08-14-All-Annotated-Gene-and-mRNA-Unique.csv
+head 2019-08-14-All-Annotated-Gene-and-mRNA-Unique.csv #Check file
 ```
 
 ```{r}
-geneAnnotationsCondensed <- read.csv("2019-08-14-All-Annotated-Gene-and-mRNA-Unique.csv", header = TRUE)
-head(geneAnnotationsCondensed)
+geneAnnotationsCondensed <- read.csv("2019-08-14-All-Annotated-Gene-and-mRNA-Unique.csv", header = TRUE) #Import condensed information
+length(geneAnnotationsCondensed$gene.chr) #Number of mRNA from unique genes.
 ```
 
+## Add Uniprot and GOterm information
 # Import coverage files filtered by 5x coverage
 
 ```{r}
