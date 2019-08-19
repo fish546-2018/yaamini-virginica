@@ -1,0 +1,171 @@
+---
+title: "Differentially Methylated Gene Analysis"
+author: "Yaamini Venkataraman"
+date: "8/19/2019"
+output: github_document
+---
+
+In this script, I will identify genes that are differentially methylated in response to *C. virginica* exposure to experimental ocean acidification conditions. I am roughly replicating an analysis from [this paper](https://advances.sciencemag.org/content/4/6/eaar8028) and [this preprint](https://www.biorxiv.org/content/early/2018/02/21/269076). .I will annotate coverage output from `bismark` with gene information, calculate median methylation for each gene, then perform t-tests for each gene. For differentially methylated genes (DMG), I will conduct a functional enrichment with GO-MWU.
+
+# Set up R Markdown document
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Obtain session information
+
+```{r}
+sessionInfo()
+```
+
+# Import and format gene locations and annotation
+
+## Import gene track
+
+```{r}
+geneList <- read.delim("../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_gene_sorted_yrv.gff3", header = FALSE) #Import gene gff3
+colnames(geneList) <- c("gene-chr", "Gnomon", "gene", "gene-start", "gene-end", "V6", "V7", "V8", "V9") #Rename columns
+head(geneList) #Confirm import
+```
+
+```{r}
+geneList <- geneList[,-c(6:8)] #Remove columns 6-8
+head(geneList) #Confirm changes
+```
+
+### Import gene ID
+
+```{r}
+geneDescriptions <- read.delim2("../2018-12-02-Gene-Enrichment-Analysis/2019-06-20-Gene-Descriptions.txt", header = FALSE, col.names = c("gene-number", "gene-ID", "V3", "V4", "V5", "V6", "V7", "V8", "V9")) #Import document with gene descrptions. Name 9 columns so all rows are imported with 9 columns
+head(geneDescriptions) #Confirm import
+```
+
+```{r}
+geneID <- geneDescriptions$gene.ID #Isolate gene ID column
+geneID <- gsub("Dbxref=GeneID:", "", geneID) #Remove extraneous characters
+head(geneID) #Confirm changes
+```
+
+### Merge gene location and gene ID
+
+```{r}
+geneList <- data.frame(geneList, geneID) #Replace geneList dataframe with geneList and geneID
+geneList <- geneList[,-6] #Remove extra column
+colnames(geneList) <- c("gene-chr", "Gnomon", "gene", "gene-start", "gene-end", "gene-ID") #Rename columns to match previous naming conventions
+head(geneList) #Confirm merge
+```
+
+## Import mRNA track
+
+```{r}
+mRNAList <- read.delim("../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_mRNA_yrv.gff3", header = FALSE) #Import mRNA track
+mRNAList <- mRNAList[,-c(6,8)] #Remove extra columns
+colnames(mRNAList) <- c("mRNA-chr", "Gnomon", "mRNA", "mRNA-start", "mRNA-end", "mRNA-strand", "V9") #Rename columns
+head(mRNAList) #Confirm import
+```
+
+### Import mRNA descriptions
+
+```{r}
+mRNADescriptions <- read.delim2("../2018-12-02-Gene-Enrichment-Analysis/2019-06-20-mRNA-Descriptions.txt", header = FALSE, col.names = paste("V", 1:78, sep = "")) #Import document with gene descrptions. Name 78 columns so all rows are imported with 78 columns
+head(mRNADescriptions) #Confirm import
+```
+
+```{r}
+geneIDmRNAList <- mRNADescriptions$V3 #Isolate gene ID column
+geneIDmRNAList <- gsub("Dbxref=GeneID:", "", geneIDmRNAList) #Remove extraneous characters
+head(geneIDmRNAList) #Confirm changes
+```
+
+```{r}
+genbankIDmRNAList <- mRNADescriptions$V4 #Isolate Genbank ID
+genbankIDmRNAList <- gsub("Genbank:", "", genbankIDmRNAList) #Remove extraneous characters
+head(genbankIDmRNAList) #Confirm changes
+```
+
+### Import isolated mRNA products
+
+```{r}
+mRNAProducts <- read.delim2("../2018-12-02-Gene-Enrichment-Analysis/2019-06-20-mRNA-Products.txt", header = FALSE, col.names = paste("V", 1:16, sep = "")) #Import document with gene descrptions. Name 16 columns so all rows are imported with 16 columns.
+head(mRNAProducts) #Confirm import
+```
+
+```{r}
+mRNAProducts <- mRNAProducts$V1 #Extract the first column with product information
+```
+
+### Reformat mRNA List
+
+```{r}
+mRNAList <- data.frame(mRNAList, geneIDmRNAList, genbankIDmRNAList, mRNAProducts) #Replace mRNAList dataframe with mRNAList, geneIDmRNAList, genbankIDmRNAList, and mRNAProducts
+mRNAList <- mRNAList[,-c(6:7)] #Remove extra columns
+colnames(mRNAList) <- c("mRNA-chr", "Gnomon", "mRNA", "mRNA-start", "mRNA-end", "gene-ID", "Genbank", "Product") #Rename columns to match previous naming conventions
+head(mRNAList) #Confirm merge
+```
+
+## Merge gene and mRNA tracks
+
+```{r}
+geneAnnotations <- unique(merge(x = geneList, y = mRNAList, by = "gene-ID")) #Merge gene and mRNA lists by gene-ID column. I will only have genes with mRNA in the final dataframe. Additionally, keep only unique entries (remove any merging artifacts)
+length(geneAnnotations$`gene-ID`) #There are 60,201 mRNA, so this is a good sign!
+```
+
+```{r}
+geneAnnotations <- geneAnnotations[,c(2, 5:6, 10:11, 1, 12, 13)] #Reorganize columns
+head(geneAnnotations) #Confirm reorganization
+```
+
+## Retain the longest mRNA for each gene
+
+When looking at differentially methylated genes, Liew et al. used the longest mRNA for each gene. I will do the same thing.
+
+```{r}
+geneAnnotations$mRNALength <- as.numeric(geneAnnotations$`mRNA-end` - geneAnnotations$`mRNA-start`) #Calculate the length of each mRNA and save in a new column
+head(geneAnnotations) #Confirm length calculation
+```
+
+```{r}
+attach(geneAnnotations) #Attach dataframe
+geneAnnotations <- geneAnnotations[order(`gene-chr`, `gene-start`, -mRNALength),] #Sort by gene chromosome, then gene start position, and finally mRNA length. The minus sign indicates the dataframe should be sorted in descending order (longer mRNA length first)
+detach(geneAnnotations) #Detach dataframe
+head(geneAnnotations) #Confirm sorting
+```
+
+```{r}
+write.csv(geneAnnotations, "2019-08-14-All-Annotated-Gene-and-mRNA.csv", quote = FALSE, row.names = FALSE) #Save ordered file
+```
+
+```{bash}
+#Sort the file by the gene start position (--key = 2,2) and only retain unique lines (--unique). Save output to a new file
+sort --unique --key=2,2 2019-08-14-All-Annotated-Gene-and-mRNA.csv \
+> 2019-08-14-All-Annotated-Gene-and-mRNA-Unique.csv
+```
+
+```{bash}
+head -n5 2019-08-14-All-Annotated-Gene-and-mRNA-Unique.csv
+```
+
+```{r}
+geneAnnotationsCondensed <- read.csv("2019-08-14-All-Annotated-Gene-and-mRNA-Unique.csv", header = TRUE)
+head(geneAnnotationsCondensed)
+```
+
+# Import coverage files filtered by 5x coverage
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
