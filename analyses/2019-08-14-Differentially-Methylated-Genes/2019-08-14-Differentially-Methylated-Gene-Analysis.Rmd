@@ -153,6 +153,45 @@ length(geneAnnotationsCondensed$gene.chr) #Number of mRNA from unique genes.
 ```
 
 ## Add Uniprot and GOterm information
+
+```{r}
+blastResults <- read.delim("../2018-12-02-Gene-Enrichment-Analysis/2018-09-11-Transcript-Uniprot-blastx-codeIsolated.txt", header = FALSE, sep = "\t", dec = ".") #Import blast results
+blastResults <- blastResults[,c(1, 3)] #Keep only relevant columns
+colnames(blastResults) <- c("Genbank", "Uniprot") #Rename columns
+head(blastResults) #Confirm column headers
+```
+
+```{r}
+geneAnnotationsCondensedUniprot <- unique(merge(x = geneAnnotationsCondensed, y = blastResults, by = "Genbank", all.x = TRUE, sort = FALSE)) #Add Uniprot Accession code to gene annotations. Keep all rows even if they don't have matching Uniprot codes. Do not resort the output. Keep only unique entries (remove merging artifacts)
+head(geneAnnotationsCondensedUniprot) #Confirm merge
+```
+
+```{r}
+uniprotGOTerms <- read.delim("../2018-12-02-Gene-Enrichment-Analysis/uniprot-reviewed_yes.tab", header = TRUE) #Import tab-delimited file with header
+uniprotGOTerms <- uniprotGOTerms[,c(1,8)] #Retain Entry and GOterm columns
+colnames(uniprotGOTerms) <- c("Uniprot", "GO") #Rename columns
+head(uniprotGOTerms) #Confirm import
+```
+
+```{r}
+geneAnnotationsCondensedUniprotGOterms <- unique(merge(x = geneAnnotationsCondensedUniprot, y = uniprotGOTerms, by = "Uniprot", all.x = TRUE)) #Add GOterms to gene annotations. Keep all rows even if they don't have matching Uniprot codes. Keep only unique entries (remove merging artifacts)
+head(geneAnnotationsCondensedUniprotGOterms, n = 2) #Confirm merge. The output is sorted by Uniprot codes, so I'll need to resort. It would have been sorted by Uniprot code order even if I had used sort = FALSE.
+```
+
+```{r}
+geneAnnotationsCondensedUniprotGOterms <- geneAnnotationsCondensedUniprotGOterms[,c(3:8, 2, 10, 9, 1, 11)] #Reorganize columns
+attach(geneAnnotationsCondensedUniprotGOterms) #Attach dataframe
+geneAnnotationsCondensedUniprotGOterms <- geneAnnotationsCondensedUniprotGOterms[order(gene.chr, gene.start),] #Sort by gene chromosome, then start position
+detach(geneAnnotationsCondensedUniprotGOterms) #Detatch dataframe
+head(geneAnnotationsCondensedUniprotGOterms, n = 5) #Confirm reorganization and sorting
+```
+
+I will now save the gene information as a new file. This information will be used to annotate coverage files.
+
+```{r}
+write.csv(geneAnnotationsCondensedUniprotGOterms, "2019-08-14-Annotated-Gene-Longest-mRNA-Uniprot-GOterms.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
 # Import coverage files filtered by 5x coverage
 
 ```{r}
