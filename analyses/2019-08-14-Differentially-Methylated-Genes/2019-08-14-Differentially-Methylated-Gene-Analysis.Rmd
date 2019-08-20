@@ -13,6 +13,13 @@ In this script, I will identify genes that are differentially methylated in resp
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Install packages
+
+```{r}
+#install.packages("dplyr")
+require(dplyr)
+```
+
 # Obtain session information
 
 ```{r}
@@ -194,13 +201,47 @@ write.csv(geneAnnotationsCondensedUniprotGOterms, "2019-08-14-Annotated-Gene-Lon
 
 # Import coverage files filtered by 5x coverage
 
-```{r}
+Liew et al. used raw coverage files from `bismark` for their analysis, but I will use manipulated coverage files. In [this Jupyter notebook](https://github.com/fish546-2018/yaamini-virginica/blob/master/notebooks/2019-03-07-Generating-Coverage-Tracks.ipynb), I filtered loci with 5x coverage and saved that information in bedGraphs. These bedGraphs will be used in the DMG analysis.
 
+```{bash}
+wget -r -l1 --no-parent -A_5x.bedgraph https://gannet.fish.washington.edu/spartina/2018-10-10-project-virginica-oa-Large-Files/2019-03-07-Yaamini-Virginica-Repository/analyses/2019-03-07-IGV-Verification/ #Download 5x bedgraphs from gannet
 ```
 
+```{bash}
+mv gannet.fish.washington.edu/spartina/2018-10-10-project-virginica-oa-Large-Files/2019-03-07-Yaamini-Virginica-Repository/analyses/2019-03-07-IGV-Verification/* . #Move files to present working directory. Where they are stored mimics file structure on gannet
+```
 
+```{bash}
+rm -r gannet.fish.washington.edu #Remove gannet directory
+```
 
+```{bash}
+head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph #Columns: chr, start, end, percent methylation. Tab-delimited.
+```
 
+```{r}
+filesToImport <- list.files(pattern = "*bedgraph") #Create a file list for all 10 files to import
+list2env(lapply(setNames(filesToImport,
+                         make.names(gsub("s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_", "", filesToImport))),
+                read.table),
+         envir = .GlobalEnv) #Import files to the .GlobalEnv with list2env. Use lapply to setNames of the files by taking all the common parts of their names out. Files will be named zr2096_#_5x.bedgraph
+head(zr2096_1_5x.bedgraph) #Confirm that the files imported correctly
+```
+
+```{r}
+#Rename columns. There really should be a good way to do this in R...
+colnames(zr2096_1_5x.bedgraph) <- c("gene.chr", "start", "end", "percentMeth")
+colnames(zr2096_2_5x.bedgraph) <- c("gene.chr", "start", "end", "percentMeth")
+colnames(zr2096_3_5x.bedgraph) <- c("gene.chr", "gene.start", "gene.end", "percentMeth")
+colnames(zr2096_4_5x.bedgraph) <- c("gene.chr", "gene.start", "gene.end", "percentMeth")
+colnames(zr2096_5_5x.bedgraph) <- c("gene.chr", "gene.start", "gene.end", "percentMeth")
+colnames(zr2096_6_5x.bedgraph) <- c("gene.chr", "gene.start", "gene.end", "percentMeth")
+colnames(zr2096_7_5x.bedgraph) <- c("gene.chr", "gene.start", "gene.end", "percentMeth")
+colnames(zr2096_8_5x.bedgraph) <- c("gene.chr", "gene.start", "gene.end", "percentMeth")
+colnames(zr2096_9_5x.bedgraph) <- c("gene.chr", "gene.start", "gene.end", "percentMeth")
+colnames(zr2096_10_5x.bedgraph) <- c("gene.chr", "gene.start", "gene.end", "percentMeth")
+head(zr2096_1_5x.bedgraph) #Check column naming
+```
 
 
 
