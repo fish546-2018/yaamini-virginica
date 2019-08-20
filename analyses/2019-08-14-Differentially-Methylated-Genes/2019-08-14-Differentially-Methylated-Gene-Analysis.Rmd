@@ -243,6 +243,12 @@ colnames(zr2096_10_5x.bedgraph) <- c("gene.chr", "gene.start", "gene.end", "perc
 head(zr2096_1_5x.bedgraph) #Check column naming
 ```
 
+```{r}
+sample1 <- subset(x = zr2096_1_5x.bedgraph, subset = zr2096_1_5x.bedgraph$gene.chr != "NC_007175.2")
+sample1$gene.chr <- factor(sample1$gene.chr)
+levels(sample1$gene.chr)
+head(sample1)
+```
 
 
 
