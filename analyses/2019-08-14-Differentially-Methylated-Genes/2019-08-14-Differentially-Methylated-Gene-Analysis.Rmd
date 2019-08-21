@@ -277,13 +277,15 @@ head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.po
 
 After annotating coverage files with `intersectBed`, I need to add percent methylation information back to the annotated files. I need the percent methylation data to calculate median methylation by gene. I could import 20 files into R, or I could use a series of `bash` commands.
 
+The original files aren't tab-delimited while the others are, so I need to get the coverage files in a tab-delimited format so my output will be tab-delimited.
+
 ```{bash}
 #For each file that ends in bedgraph (the original coverage files)
-#Print the first three columns (chr, start, end) with dashes in between, then the rest of the columns in the file
+#Print the first three columns (chr, start, end) with dashes ("-") in between. Then, print the rest of the columns (chr, start, end, percentMeth) in the file with tabs ("\t") inbetween.
 #Save the file with the base name + .sorted
 for f in *bedgraph
 do
-  awk '{print $1"-"$2"-"$3"\t"$0}' ${f} \
+  awk '{print $1"-"$2"-"$3"\t"$1"\t"$2"\t"$3"\t"$4}' ${f} \
   | sort -k1,1 \
   > ${f}.sorted
 done
@@ -349,6 +351,70 @@ do
 done
 ```
 
+## Add column names to files
+
+```{bash}
+#For each file that ends in percentMeth
+#List tab-delimited column headers
+#Add the file after the headers
+#Save output as a new file with the base name + ".header"
+for f in *percentMeth
+do
+  echo -e "key\tchr\tstart\tend\tpercentMeth\tchr2\tstart2\tend2\tgene-chr\tgene-start\tgene-end\tmRNA-start\tmRNA-end\tgeneID\tGenbank\tmRNALength\tProduct\tUniprot\tGO" \
+  | cat - ${f} \
+  > ${f}.header
+done
+```
+
+```{bash}
+find *header
+```
+
+```{bash}
+head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.annotated-percentMeth.header
+```
+
+# Calculate median percent methylation
+
+I can do this within R, so the first step is to import the files.
+
+```{r}
+filesToImport <- list.files(pattern = "*header") #Create a file list for all 10 files to import
+list2env(lapply(setNames(filesToImport,
+                         make.names(gsub("_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.annotated-percentMeth.header", "", filesToImport))),
+                read.delim),
+         envir = .GlobalEnv) #Import files to the .GlobalEnv with list2env. Use lapply to setNames of the files by taking all the common parts of their names out. Read files with read.delim (can only use defaults = header = TRUE, sep = "\t"). Files will be named zr2096_#
+head(zr2096_1) #Confirm import
+```
+
+Since I want to do a t-test between ambient and treatment samples, I should combine samples by exposure.
+
+```{r}
+ambientSamples <- rbind(zr2096_1,
+                        zr2096_2,
+                        zr2096_3,
+                        zr2096_4,
+                        zr2096_5) #Combine all ambient samples
+treatmentSamples <- rbind(zr2096_6,
+                          zr2096_7,
+                          zr2096_8,
+                          zr2096_9,
+                          zr2096_10) #Combine all treatment samples
+```
+
+```{r}
+#Remove extraneous columns
+ambientSamples <- ambientSamples[,-c(1, 6:8)]
+treatmentSamples <- treatmentSamples[,-c(1, 6:8)]
+head(treatmentSamples) #Confirm column deletion
+```
+
+```{r}
+#Calculate median percent methylation by gene
+ambientPercentMeth <- aggregate(percentMeth ~ geneID, data = ambientSamples, FUN = median)
+treatmentPercentMeth <- aggregate(percentMeth ~ geneID, data = treatmentSamples, FUN = median)
+head(ambientPercentMeth) #Confirm percent methylation calculation
+```
 
 
 
