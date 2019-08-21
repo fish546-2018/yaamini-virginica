@@ -249,6 +249,12 @@ head zr2096_5_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.po
 ## Run `intersectBed`
 
 ```{bash}
+#For each file that ends in posOnly
+#Use intersectBed to find where loci and genes intersect, allowing loci to be mapped to annotated genes
+#wb: Print all lines in the second file
+#a: file that ends in posOnly
+#b: annotated gene list
+#Save output in a new file that has the same base name and ends in -Annotated.txt
 for f in *posOnly
 do
   /Users/Shared/bioinformatics/bedtools2/bin/intersectBed \
@@ -267,8 +273,82 @@ find *Annotated.txt
 head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-Annotated.txt #Confirm file is annotated
 ```
 
+## Add back percent methylation information
 
+After annotating coverage files with `intersectBed`, I need to add percent methylation information back to the annotated files. I need the percent methylation data to calculate median methylation by gene. I could import 20 files into R, or I could use a series of `bash` commands.
 
+```{bash}
+#For each file that ends in bedgraph (the original coverage files)
+#Print the first three columns (chr, start, end) with dashes in between, then the rest of the columns in the file
+#Save the file with the base name + .sorted
+for f in *bedgraph
+do
+  awk '{print $1"-"$2"-"$3"\t"$0}' ${f} \
+  | sort -k1,1 \
+  > ${f}.sorted
+done
+```
+
+```{bash}
+find *bedgraph.sorted
+```
+
+```{bash}
+head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.sorted
+```
+
+```{bash}
+#For each file that ends in Annotated.txt
+#Print the first three columns (chr, start, end) with dashes in between, then the rest of the columns in the file
+#Save the file with the base name + .sorted
+for f in *Annotated.txt
+do
+  awk '{print $1"-"$2"-"$3"\t"$0}' ${f} \
+  | sort -k1,1 \
+  > ${f}.sorted
+done
+```
+
+```{bash}
+find *Annotated.txt.sorted
+```
+
+```{bash}
+head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-Annotated.txt.sorted
+```
+
+```{bash}
+for n in {1..10}
+do
+  join -j 1 -t $'\t' \
+  "zr2096_$n_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.sorted" \
+  "zr2096_$n_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-Annotated.txt.sorted" \
+  > "sample_$n_annotated-percentMeth"
+done
+```
+
+```{r}
+
+```
+
+```{bash}
+join -j 1 -t $'\t' \
+test1.txt \
+test2.txt \
+> test3.txt
+```
+
+```{bash}
+head test3.txt
+```
+
+```{bash}
+wc -l test2.txt
+```
+
+```{bash}
+wc -l test3.txt
+```
 
 
 
