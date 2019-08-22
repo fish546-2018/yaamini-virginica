@@ -387,34 +387,218 @@ list2env(lapply(setNames(filesToImport,
 head(zr2096_1) #Confirm import
 ```
 
-Since I want to do a t-test between ambient and treatment samples, I should combine samples by exposure.
-
 ```{r}
-ambientSamples <- rbind(zr2096_1,
-                        zr2096_2,
-                        zr2096_3,
-                        zr2096_4,
-                        zr2096_5) #Combine all ambient samples
-treatmentSamples <- rbind(zr2096_6,
-                          zr2096_7,
-                          zr2096_8,
-                          zr2096_9,
-                          zr2096_10) #Combine all treatment samples
+#Remove extraneous columns...there has to be a better way to do this in R
+zr2096_1 <- zr2096_1[,-c(1, 6:8)]
+zr2096_2 <- zr2096_2[,-c(1, 6:8)]
+zr2096_3 <- zr2096_3[,-c(1, 6:8)]
+zr2096_4 <- zr2096_4[,-c(1, 6:8)]
+zr2096_5 <- zr2096_5[,-c(1, 6:8)]
+zr2096_6 <- zr2096_6[,-c(1, 6:8)]
+zr2096_7 <- zr2096_7[,-c(1, 6:8)]
+zr2096_8 <- zr2096_8[,-c(1, 6:8)]
+zr2096_9 <- zr2096_9[,-c(1, 6:8)]
+zr2096_10 <- zr2096_10[,-c(1, 6:8)]
+head(zr2096_1) #Confirm column removal
 ```
 
 ```{r}
-#Remove extraneous columns
-ambientSamples <- ambientSamples[,-c(1, 6:8)]
-treatmentSamples <- treatmentSamples[,-c(1, 6:8)]
-head(treatmentSamples) #Confirm column deletion
+#Calculate median percent methylation by gene for each sample
+zr2096_1_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_1, FUN = median)
+zr2096_2_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_2, FUN = median)
+zr2096_3_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_3, FUN = median)
+zr2096_4_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_4, FUN = median)
+zr2096_5_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_5, FUN = median)
+zr2096_6_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_6, FUN = median)
+zr2096_7_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_7, FUN = median)
+zr2096_8_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_8, FUN = median)
+zr2096_9_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_9, FUN = median)
+zr2096_10_PercentMeth <- aggregate(percentMeth ~ geneID, data = zr2096_10, FUN = median)
+head(zr2096_1_PercentMeth) #Confirm percent methylation calculation
 ```
 
 ```{r}
-#Calculate median percent methylation by gene
-ambientPercentMeth <- aggregate(percentMeth ~ geneID, data = ambientSamples, FUN = median)
-treatmentPercentMeth <- aggregate(percentMeth ~ geneID, data = treatmentSamples, FUN = median)
-head(ambientPercentMeth) #Confirm percent methylation calculation
+#Use a full_join to merge ambient and treatment percent methylation information so all geneIDs are present.
+fullPercentMeth <- full_join(x = zr2096_1_PercentMeth, y = zr2096_2_PercentMeth, by = "geneID")
+fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_3_PercentMeth, by = "geneID")
+fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_4_PercentMeth, by = "geneID")
+fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_5_PercentMeth, by = "geneID")
+fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_6_PercentMeth, by = "geneID")
+fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_7_PercentMeth, by = "geneID")
+fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_8_PercentMeth, by = "geneID")
+fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_9_PercentMeth, by = "geneID")
+fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_10_PercentMeth, by = "geneID")
+length(fullPercentMeth$geneID) #Number of gene IDs in combined dataset.
+head(fullPercentMeth) #Confirm full_join
 ```
+
+```{r}
+#Create individual dataframes
+zr2096_1_PercentMethFull <- fullPercentMeth[,c(1,2)]
+zr2096_2_PercentMethFull <- fullPercentMeth[,c(1,3)]
+zr2096_3_PercentMethFull <- fullPercentMeth[,c(1,4)]
+zr2096_4_PercentMethFull <- fullPercentMeth[,c(1,5)]
+zr2096_5_PercentMethFull <- fullPercentMeth[,c(1,6)]
+zr2096_6_PercentMethFull <- fullPercentMeth[,c(1,7)]
+zr2096_7_PercentMethFull <- fullPercentMeth[,c(1,8)]
+zr2096_8_PercentMethFull <- fullPercentMeth[,c(1,9)]
+zr2096_9_PercentMethFull <- fullPercentMeth[,c(1,10)]
+zr2096_10_PercentMethFull <- fullPercentMeth[,c(1,11)]
+head(zr2096_1_PercentMethFull) #Confirm dataframe creation
+```
+
+```{r}
+#Change column names
+colnames(zr2096_1_PercentMethFull)[2] <- "percentMeth"
+colnames(zr2096_2_PercentMethFull)[2] <- "percentMeth"
+colnames(zr2096_3_PercentMethFull)[2] <- "percentMeth"
+colnames(zr2096_4_PercentMethFull)[2] <- "percentMeth"
+colnames(zr2096_5_PercentMethFull)[2] <- "percentMeth"
+colnames(zr2096_6_PercentMethFull)[2] <- "percentMeth"
+colnames(zr2096_7_PercentMethFull)[2] <- "percentMeth"
+colnames(zr2096_8_PercentMethFull)[2] <- "percentMeth"
+colnames(zr2096_9_PercentMethFull)[2] <- "percentMeth"
+colnames(zr2096_10_PercentMethFull)[2] <- "percentMeth"
+head(zr2096_1_PercentMethFull) #Confirm name change
+```
+
+
+
+
+
+```{r}
+#Add sample number to each dataframe
+zr2096_1_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_1_PercentMethFull$geneID))
+zr2096_2_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_2_PercentMethFull$geneID))
+zr2096_3_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_3_PercentMethFull$geneID))
+zr2096_4_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_4_PercentMethFull$geneID))
+zr2096_5_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_5_PercentMethFull$geneID))
+zr2096_6_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_6_PercentMethFull$geneID))
+zr2096_7_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_7_PercentMethFull$geneID))
+zr2096_8_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_8_PercentMethFull$geneID))
+zr2096_9_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_9_PercentMethFull$geneID))
+zr2096_10_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_10_PercentMethFull$geneID))
+head(zr2096_1_PercentMethFull) #Confirm column addition
+```
+
+```{r}
+#Add treatment indication to each dataframe
+zr2096_1_PercentMethFull$treatment <- rep("Ambient", times = length(zr2096_1_PercentMethFull$geneID))
+zr2096_2_PercentMethFull$treatment <- rep("Ambient", times = length(zr2096_2_PercentMethFull$geneID))
+zr2096_3_PercentMethFull$treatment <- rep("Ambient", times = length(zr2096_3_PercentMethFull$geneID))
+zr2096_4_PercentMethFull$treatment <- rep("Ambient", times = length(zr2096_4_PercentMethFull$geneID))
+zr2096_5_PercentMethFull$treatment <- rep("Ambient", times = length(zr2096_5_PercentMethFull$geneID))
+zr2096_6_PercentMethFull$treatment <- rep("Treatment", times = length(zr2096_6_PercentMethFull$geneID))
+zr2096_7_PercentMethFull$treatment <- rep("Treatment", times = length(zr2096_7_PercentMethFull$geneID))
+zr2096_8_PercentMethFull$treatment <- rep("Treatment", times = length(zr2096_8_PercentMethFull$geneID))
+zr2096_9_PercentMethFull$treatment <- rep("Treatment", times = length(zr2096_9_PercentMethFull$geneID))
+zr2096_10_PercentMethFull$treatment <- rep("Treatment", times = length(zr2096_10_PercentMethFull$geneID))
+head(zr2096_1_PercentMethFull) #Confirm column addition
+```
+
+```{r}
+fullPercentMethExpanded <- rbind(zr2096_1_PercentMethFull,
+                                 zr2096_2_PercentMethFull,
+                                 zr2096_3_PercentMethFull,
+                                 zr2096_4_PercentMethFull,
+                                 zr2096_5_PercentMethFull,
+                                 zr2096_6_PercentMethFull,
+                                 zr2096_7_PercentMethFull,
+                                 zr2096_8_PercentMethFull,
+                                 zr2096_9_PercentMethFull,
+                                 zr2096_10_PercentMethFull) #Create new dataframe with all sample information
+head(fullPercentMethExpanded) #Confirm dataframe creation
+```
+
+```{r}
+write.csv(fullPercentMethExpanded, "2019-08-22-Gene-Median-Percent-Methylation-By-Sample.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
+# Identifying differentially methylated genes
+
+## Check assumptions
+
+I want to do a t-test, so I should first check normality and variance assumptions.
+
+### Check normality
+`
+```{r}
+#Check normality
+hist(ambientPercentMethFull$percentMeth) #Ambient samples
+hist(treatmentPercentMethFull$percentMeth) #Treatment samples
+```
+
+These clearly aren't normal distributions. I need to do some corrections to deal with the left-skewed distributions.
+
+#### Log transformation
+
+```{r}
+#Perform log transformation
+ambientPercentMethFull$logPercentMeth <- log(ambientPercentMethFull$percentMeth) #Ambient samples
+treatmentPercentMethFull$logPercentMeth <- log(treatmentPercentMethFull$percentMeth) #Treatment samples
+```
+
+```{r}
+#Check normality
+hist(ambientPercentMethFull$logPercentMeth) #Ambient samples
+hist(treatmentPercentMethFull$logPercentMeth) #Treatment samples
+```
+
+#### Square root transformation
+
+```{r}
+#Perform square root transformation
+ambientPercentMethFull$sqrtPercentMeth <- sqrt(ambientPercentMethFull$percentMeth) #Ambient samples
+treatmentPercentMethFull$sqrtPercentMeth <- sqrt(treatmentPercentMethFull$percentMeth) #Treatment samples
+```
+
+```{r}
+#Check normality
+hist(ambientPercentMethFull$sqrtPercentMeth) #Ambient samples
+hist(treatmentPercentMethFull$sqrtPercentMeth) #Treatment samples
+```
+
+```{r}
+#Perform cube root transformation
+ambientPercentMethFull$crtPercentMeth <- (ambientPercentMethFull$percentMeth)^(1/3) #Ambient samples
+treatmentPercentMethFull$crtPercentMeth <- log(treatmentPercentMethFull$percentMeth)^(1/3) #Treatment samples
+```
+
+```{r}
+#Check normality
+hist(ambientPercentMethFull$crtPercentMeth) #Ambient samples
+hist(treatmentPercentMethFull$crtPercentMeth) #Treatment samples
+```
+
+Well, none of these transformations are very helpful! The MBD bias is pretty evident, even in the transformed data. I'll condut a non-parametric test instead.
+
+## Conduct non-parametric test
+
+```{r}
+temp <- kruskal.test(treatmentPercentMethFull$percentMeth ~ ambientPercentMethFull$percentMeth)
+temp$p.value
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
