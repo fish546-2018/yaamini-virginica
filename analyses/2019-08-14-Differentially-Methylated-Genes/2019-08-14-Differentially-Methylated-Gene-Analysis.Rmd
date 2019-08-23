@@ -418,18 +418,18 @@ head(zr2096_1_PercentMeth) #Confirm percent methylation calculation
 ```
 
 ```{r}
-#Use a full_join to merge ambient and treatment percent methylation information so all geneIDs are present.
-fullPercentMeth <- full_join(x = zr2096_1_PercentMeth, y = zr2096_2_PercentMeth, by = "geneID")
-fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_3_PercentMeth, by = "geneID")
-fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_4_PercentMeth, by = "geneID")
-fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_5_PercentMeth, by = "geneID")
-fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_6_PercentMeth, by = "geneID")
-fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_7_PercentMeth, by = "geneID")
-fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_8_PercentMeth, by = "geneID")
-fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_9_PercentMeth, by = "geneID")
-fullPercentMeth <- full_join(x = fullPercentMeth, y = zr2096_10_PercentMeth, by = "geneID")
+#Merge sample percent methylation information so that all geneIDs have data
+fullPercentMeth <- merge(x = zr2096_1_PercentMeth, y = zr2096_2_PercentMeth, by = "geneID")
+fullPercentMeth <- merge(x = fullPercentMeth, y = zr2096_3_PercentMeth, by = "geneID")
+fullPercentMeth <- merge(x = fullPercentMeth, y = zr2096_4_PercentMeth, by = "geneID")
+fullPercentMeth <- merge(x = fullPercentMeth, y = zr2096_5_PercentMeth, by = "geneID")
+fullPercentMeth <- merge(x = fullPercentMeth, y = zr2096_6_PercentMeth, by = "geneID")
+fullPercentMeth <- merge(x = fullPercentMeth, y = zr2096_7_PercentMeth, by = "geneID")
+fullPercentMeth <- merge(x = fullPercentMeth, y = zr2096_8_PercentMeth, by = "geneID")
+fullPercentMeth <- merge(x = fullPercentMeth, y = zr2096_9_PercentMeth, by = "geneID")
+fullPercentMeth <- merge(x = fullPercentMeth, y = zr2096_10_PercentMeth, by = "geneID")
 length(fullPercentMeth$geneID) #Number of gene IDs in combined dataset.
-head(fullPercentMeth) #Confirm full_join
+head(fullPercentMeth) #Confirm merge. Column names are replicated but the columns are from samples 1-10.
 ```
 
 ```{r}
@@ -462,23 +462,19 @@ colnames(zr2096_10_PercentMethFull)[2] <- "percentMeth"
 head(zr2096_1_PercentMethFull) #Confirm name change
 ```
 
-
-
-
-
 ```{r}
 #Add sample number to each dataframe
 zr2096_1_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_1_PercentMethFull$geneID))
-zr2096_2_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_2_PercentMethFull$geneID))
-zr2096_3_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_3_PercentMethFull$geneID))
-zr2096_4_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_4_PercentMethFull$geneID))
-zr2096_5_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_5_PercentMethFull$geneID))
-zr2096_6_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_6_PercentMethFull$geneID))
-zr2096_7_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_7_PercentMethFull$geneID))
-zr2096_8_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_8_PercentMethFull$geneID))
-zr2096_9_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_9_PercentMethFull$geneID))
-zr2096_10_PercentMethFull$sampleNumber <- rep("sample_1", times = length(zr2096_10_PercentMethFull$geneID))
-head(zr2096_1_PercentMethFull) #Confirm column addition
+zr2096_2_PercentMethFull$sampleNumber <- rep("sample_2", times = length(zr2096_2_PercentMethFull$geneID))
+zr2096_3_PercentMethFull$sampleNumber <- rep("sample_3", times = length(zr2096_3_PercentMethFull$geneID))
+zr2096_4_PercentMethFull$sampleNumber <- rep("sample_4", times = length(zr2096_4_PercentMethFull$geneID))
+zr2096_5_PercentMethFull$sampleNumber <- rep("sample_5", times = length(zr2096_5_PercentMethFull$geneID))
+zr2096_6_PercentMethFull$sampleNumber <- rep("sample_6", times = length(zr2096_6_PercentMethFull$geneID))
+zr2096_7_PercentMethFull$sampleNumber <- rep("sample_7", times = length(zr2096_7_PercentMethFull$geneID))
+zr2096_8_PercentMethFull$sampleNumber <- rep("sample_8", times = length(zr2096_8_PercentMethFull$geneID))
+zr2096_9_PercentMethFull$sampleNumber <- rep("sample_9", times = length(zr2096_9_PercentMethFull$geneID))
+zr2096_10_PercentMethFull$sampleNumber <- rep("sample_10", times = length(zr2096_10_PercentMethFull$geneID))
+head(zr2096_5_PercentMethFull) #Confirm column addition
 ```
 
 ```{r}
@@ -516,67 +512,80 @@ write.csv(fullPercentMethExpanded, "2019-08-22-Gene-Median-Percent-Methylation-B
 
 # Identifying differentially methylated genes
 
-## Check assumptions
+## Check normality
 
-I want to do a t-test, so I should first check normality and variance assumptions.
-
-### Check normality
+I want to do a t-test, so I should first check normality first.
 `
 ```{r}
-#Check normality
-hist(ambientPercentMethFull$percentMeth) #Ambient samples
-hist(treatmentPercentMethFull$percentMeth) #Treatment samples
+hist(fullPercentMethExpanded$percentMeth) #Check normality
 ```
 
-These clearly aren't normal distributions. I need to do some corrections to deal with the left-skewed distributions.
-
-#### Log transformation
+This clearly isn't a normal distributions. I need to do some corrections to deal with the left-skewness.
 
 ```{r}
-#Perform log transformation
-ambientPercentMethFull$logPercentMeth <- log(ambientPercentMethFull$percentMeth) #Ambient samples
-treatmentPercentMethFull$logPercentMeth <- log(treatmentPercentMethFull$percentMeth) #Treatment samples
+fullPercentMethExpanded$logPercentMeth <- log(fullPercentMethExpanded$percentMeth) #Perform log-transformation
+fullPercentMethExpanded$sqrtPercentMeth <- sqrt(fullPercentMethExpanded$percentMeth) #Perform square root transformation
+fullPercentMethExpanded$crtPercentMeth <- (fullPercentMethExpanded$percentMeth)^(1/3) #Perform cube root transformation
 ```
 
 ```{r}
 #Check normality
-hist(ambientPercentMethFull$logPercentMeth) #Ambient samples
-hist(treatmentPercentMethFull$logPercentMeth) #Treatment samples
-```
-
-#### Square root transformation
-
-```{r}
-#Perform square root transformation
-ambientPercentMethFull$sqrtPercentMeth <- sqrt(ambientPercentMethFull$percentMeth) #Ambient samples
-treatmentPercentMethFull$sqrtPercentMeth <- sqrt(treatmentPercentMethFull$percentMeth) #Treatment samples
-```
-
-```{r}
-#Check normality
-hist(ambientPercentMethFull$sqrtPercentMeth) #Ambient samples
-hist(treatmentPercentMethFull$sqrtPercentMeth) #Treatment samples
-```
-
-```{r}
-#Perform cube root transformation
-ambientPercentMethFull$crtPercentMeth <- (ambientPercentMethFull$percentMeth)^(1/3) #Ambient samples
-treatmentPercentMethFull$crtPercentMeth <- log(treatmentPercentMethFull$percentMeth)^(1/3) #Treatment samples
-```
-
-```{r}
-#Check normality
-hist(ambientPercentMethFull$crtPercentMeth) #Ambient samples
-hist(treatmentPercentMethFull$crtPercentMeth) #Treatment samples
+hist(fullPercentMethExpanded$logPercentMeth) #Log transformation
+hist(fullPercentMethExpanded$sqrtPercentMeth) #Square root transformation
+hist(fullPercentMethExpanded$crtPercentMeth) #Cube root transformation
 ```
 
 Well, none of these transformations are very helpful! The MBD bias is pretty evident, even in the transformed data. I'll condut a non-parametric test instead.
 
-## Conduct non-parametric test
+## Non-parametric test
+
+### Format for statistical testing
 
 ```{r}
-temp <- kruskal.test(treatmentPercentMethFull$percentMeth ~ ambientPercentMethFull$percentMeth)
-temp$p.value
+attach(fullPercentMethExpanded) #Attach dataframe
+fullPercentMethExpanded <- fullPercentMethExpanded[order(geneID, treatment),] #Sort by gene ID, then by treatment
+detach(fullPercentMethExpanded) #Detach dataframe
+head(fullPercentMethExpanded) #Confirm sorting
+```
+
+
+```{r}
+ambientPercentMethFull <- subset(fullPercentMethExpanded, subset = fullPercentMethExpanded$treatment == "Ambient") #Subset ambient samples
+treatmentPercentMethFull <- subset(fullPercentMethExpanded, subset = fullPercentMethExpanded$treatment == "Treatment") #Subset treatment samples
+head(ambientPercentMethFull) #Confirm subset
+head(treatmentPercentMethFull) #Confirm subset
+```
+
+
+### Conduct Kruskal-Wallis test
+
+```{r}
+KWTestResults <- data.frame("geneID" = unique(ambientPercentMethFull$geneID),
+                            "chi-squared" = rep(0, times = length(unique(ambientPercentMethFull$geneID))),
+                            "df" = rep(0, times = length(unique(ambientPercentMethFull$geneID))),
+                            "p-value" = rep(0, times = length(unique(ambientPercentMethFull$geneID)))) #Create a new dataframe to store results of statistical test
+head(KWTestResults) #Confirm dataframe creation
+```
+
+```{r}
+for (i in 1:length(KWTestResults$geneID)) {
+  temp <- kruskal.test(list(ambientPercentMethFull$percentMeth[((5*i)-4):(5*i)], treatmentPercentMethFull$percentMeth[((5*i)-4):(5*i)]))
+  KWTestResults$chi.squared[i] <- temp$statistic
+  KWTestResults$df[i] <- temp$parameter
+  KWTestResults$p.value[i] <- temp$p.value
+}
+head(KWTestResults) #Confirm statistical tests worked
+```
+
+```{r}
+for (i in 1:10) {
+  print(paste((5*i)-4))
+}
+```
+
+```{r}
+test <- kruskal.test(list(ambientPercentMethFull$percentMeth[500:505], treatmentPercentMethFull$percentMeth[500:505]))
+temp
 ```
 
 
