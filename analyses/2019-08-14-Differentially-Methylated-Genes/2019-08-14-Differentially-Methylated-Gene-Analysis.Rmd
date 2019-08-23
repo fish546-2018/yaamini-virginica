@@ -320,6 +320,11 @@ head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.po
 ```
 
 ```{bash}
+#For each file that ends in bedgraph
+#Join 2 files using the first column. The files and tab-delimited and the output should also be tab-delimited
+#The first file ends with .bedgraph.sorted
+#The second file ends with .bedgraph.posOnly.Annotated.txt.sorted
+#Add .annotated.percentMeth to the base name of the output file
 for f in *bedgraph
 do
   join -j 1 -t $'\t' \
@@ -591,3 +596,32 @@ range(KWTestResults$adj.p, na.rm = TRUE) #Not counting NAs, there are no genes w
 write.csv(KWTestResults, "2019-08-14-DMG-KW-Test-Results.csv", quote = FALSE, row.names = FALSE) #Save file
 ```
 
+#### Match statistical test results to genes with DML
+
+Liew et al. filtered their list of genes before statistical testing by selecting genes with at least five methylated positions. To see if filtering has any effect on the adjusted p-values, I will start by selecting only genes with DML.
+
+```{r}
+DMLGeneAnnotation <- read.csv("2019-06-20-DML-Gene-Annotation.csv", header = TRUE, row.names = 1) #Import file. The first column are row names.
+head(DMLGeneAnnotation) #Confirm import
+```
+
+```{r}
+DMLGeneAnnotationGenes <- data.frame("geneID" = unique(DMLGeneAnnotation$geneID),
+                                     "DML.adj.p" = rep(0, times = length(unique(DMLGeneAnnotation$geneID)))) #Extract unique genes that DML are in and place in a new dataframe. Create an empty column for new adjusted p-values that's the same length as the number of unique gene IDs
+length(DMLGeneAnnotationGenes$geneID) #Count the number of unique gene IDs from DML. About 100 less than the number of DML
+head(DMLGeneAnnotationGenes) #Confirm dataframe creation
+```
+
+```{r}
+KWTestResultsDML <- unique(merge(x = KWTestResults, y = DMLGeneAnnotationGenes, by = "geneID")) #Merge KW test results with DML information. Retain only unique lines (avoid merging artifacts)
+head(KWTestResultsDML) #Confirm merge
+```
+
+```{r}
+KWTestResultsDML$DML.adj.p <- p.adjust(KWTestResultsDML$p.value, method = "BH") #Correct for false discovery rate using Bejamini-Hochberg correction
+range(KWTestResultsDML$DML.adj.p) #There are no significant p-values after correction
+```
+
+```{r}
+write.csv(KWTestResultsDML, "2019-08-14-DMG-KW-Test-Results-DMLOnly.csv", quote = FALSE, row.names = FALSE) #Save file
+```
