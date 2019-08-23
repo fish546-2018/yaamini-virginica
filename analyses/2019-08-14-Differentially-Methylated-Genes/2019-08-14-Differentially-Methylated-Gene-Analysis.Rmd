@@ -568,6 +568,11 @@ head(KWTestResults) #Confirm dataframe creation
 ```
 
 ```{r}
+#For each unique geneID
+#Conduct a KW test for a set of 5 rows from each dataframe (5 ambient and 5 treatment median % methylation values for the same gene)
+#Store the chi-squared statistic in the ith row
+#Store the df in the ith row
+#Store the p.value in the ith row
 for (i in 1:length(KWTestResults$geneID)) {
   temp <- kruskal.test(list(ambientPercentMethFull$percentMeth[((5*i)-4):(5*i)], treatmentPercentMethFull$percentMeth[((5*i)-4):(5*i)]))
   KWTestResults$chi.squared[i] <- temp$statistic
@@ -578,36 +583,11 @@ head(KWTestResults) #Confirm statistical tests worked
 ```
 
 ```{r}
-for (i in 1:10) {
-  print(paste((5*i)-4))
-}
+KWTestResults$adj.p <- p.adjust(KWTestResults$p.value, method = "BH") #Control the false discovery rate using a Benjamini-Hochberg correction
+range(KWTestResults$adj.p, na.rm = TRUE) #Not counting NAs, there are no genes with significant differential methylation. No need to annotate genes! 
 ```
 
 ```{r}
-test <- kruskal.test(list(ambientPercentMethFull$percentMeth[500:505], treatmentPercentMethFull$percentMeth[500:505]))
-temp
+write.csv(KWTestResults, "2019-08-14-DMG-KW-Test-Results.csv", quote = FALSE, row.names = FALSE) #Save file
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
