@@ -13,13 +13,6 @@ In this script, I will identify genes that are differentially methylated in resp
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Install packages
-
-```{r}
-#install.packages("dplyr")
-require(dplyr)
-```
-
 # Obtain session information
 
 ```{r}
