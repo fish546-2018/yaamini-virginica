@@ -656,14 +656,32 @@ I will consider genes with significant uncorrected p-values as differentially me
 ## All genes
 
 ```{r}
-uncorrSigKWTestResults <- subset(KWTestResults, subset = KWTestResults$p.value < 0.05) #Subset genes with uncorrected p-values less than 0.05
-length(uncorrSigKWTestResults$geneID) #There are 223 significant genes.
-head(uncorrSigKWTestResults) #Confirm subset
+colnames(geneAnnotationsCondensedUniprotGOterms)[6] <- "geneID" #Rename column so it's consistent with KW results
+colnames(geneAnnotationsCondensedUniprotGOterms) #Confirm column was renamed
 ```
 
 ```{r}
-colnames(geneAnnotationsCondensedUniprotGOterms)[6] <- "geneID" #Rename column so it's consistent with KW results
-colnames(geneAnnotationsCondensedUniprotGOterms) #Confirm column was renamed
+uncorrGenes <- unique(merge(x = KWTestResults, y = geneAnnotationsCondensedUniprotGOterms, by = "geneID")) #Annotate genes and remove any merging artifacts
+length(uncorrGenes$geneID) == length(KWTestResults$geneID) #Check that gene IDs are not duplicated
+head(uncorrGenes) #Confirm merge
+```
+
+```{r}
+uncorrGenes <- unique(merge(x = uncorrGenes, y = fullMethDiff, by = "geneID")) #Add meth.diff information
+length(uncorrGenes$geneID) == length(KWTestResults$geneID) #Check that gene IDs are not duplicated
+head(uncorrGenes) #Confirm merge
+```
+
+```{r}
+write.csv(uncorrGenes, "2019-08-14-KW-Test-Results-Annotated.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
+## DMG
+
+```{r}
+uncorrSigKWTestResults <- subset(KWTestResults, subset = KWTestResults$p.value < 0.05) #Subset genes with uncorrected p-values less than 0.05
+length(uncorrSigKWTestResults$geneID) #There are 223 significant genes.
+head(uncorrSigKWTestResults) #Confirm subset
 ```
 
 ```{r}
@@ -712,17 +730,119 @@ write.csv(uncorrSigGenesDML, "2019-08-14-DMG-KW-Test-Results-DMLOnly-Uncorrected
 
 ### GO annotations table
 
+The first table needs to be a tab-delimited file with one column for genes and one column for GOterms. All genes, not just DMG, need to be included.
 
+```{r}
+goAnnotationsGenes <- data.frame(uncorrGenes$Genbank,
+                                 uncorrGenes$GO) #Create a new dataframe with Genbak and GO columns. Use na.omit to drop lines with N/A instead of GOterms
+head(goAnnotationsGenes) #Confirm format is good.
+```
 
-## REMOVE LINES WITHOUT GO ANNOTATIONS
+```{r}
+write.table(goAnnotationsGenes, "2019-08-14-Genes-GO-Annotations-Table.tab", sep = "\t", col.names = FALSE, row.names = FALSE, quote = FALSE) #Save file
+```
 
+```{bash}
+head 2019-08-14-Genes-GO-Annotations-Table.tab #Confirm formatting was retained
+```
 
 ### Table of significance measures
 
+This table is a .csv file with one column for gene IDs and another for a continuous significance measure. All genes need to be included, not just those with significant DMG. Similar to the GO-MWU example, I will use signed negative log p-values modified from the Kruskal-Wallis output. Hypomethylated genes will have negative p-values, and hypermethylated genes will have positive p-values.
+
+#### Subset table
+
+```{r}
+sigMeasuresGenes <- data.frame("gene" = uncorrGenes$Genbank,
+                               "logP" = log(uncorrGenes$p.value),
+                               "meth.diff" = uncorrGenes$meth.diff) #Subset Genbank ID, log(p-value), and meth.diff
+head(sigMeasuresGenes) #Confirm subset
+```
+
 #### Correct p-values for hypermethylated genes
+
+```{r}
+sigMeasuresGenesHyper <- subset(x = sigMeasuresGenes, subset = sigMeasuresGenes$meth.diff >= 0) #Subset hypermethylated genes. Differences of 0 will need positive p-values as well.
+range(sigMeasuresGenesHyper$meth.diff) #Confirm subset
+```
+
+```{r}
+range(sigMeasuresGenesHyper$logP, na.rm = TRUE) #Look at range of values for hypermethylated genes. Negative values will need to be positive.
+```
+
+```{r}
+sigMeasuresGenesHyper$signLogP <- -1 * sigMeasuresGenesHyper$logP #Multiply values by -1. 0s won't change.
+head(sigMeasuresGenesHyper) #Confirm changes
+```
 
 #### Correct p-values for hypomethylated genes
 
+```{r}
+sigMeasuresGenesHypo <- subset(x = sigMeasuresGenes, subset = sigMeasuresGenes$meth.diff < 0) #Subset hypomethylated loci
+range(sigMeasuresGenesHypo$meth.diff) #Confirm subset
+```
+
+```{r}
+range(sigMeasuresGenesHypo$logP) #Look at range of p-values. All of these are already negative, so there's no need to modify it
+```
+
+```{r}
+sigMeasuresGenesHypo$signLogP <- sigMeasuresGenesHypo$logP #Copy logP to a new columns for consistency
+head(sigMeasuresGenesHypo) #Confirm changes
+```
+
 #### Combine tables with corrected p-values
 
+```{r}
+sigMeasuresGenesCorrected <- rbind(sigMeasuresGenesHyper, sigMeasuresGenesHypo) #Combine dataframes
+sigMeasuresGenesCorrected <- sigMeasuresGenesCorrected[,-c(2:3)] #Remove unnecessary columns
+head(sigMeasuresGenesCorrected) #Confirm changes
+```
+
+```{r}
+write.csv(sigMeasuresGenesCorrected, "2019-08-14-Genes-Table-of-Significance-Measures.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
+```{bash}
+head 2019-08-14-Genes-Table-of-Significance-Measures.csv #Confirm formatting is good. It is.
+```
+
 ## Conduct gene enrichment
+
+These commands were copied from the GO-MWU.R file in the GO-MWU Github repository.
+
+### Biological processes
+
+#### Edit input variables
+
+```{r}
+input="2019-08-14-Genes-Table-of-Significance-Measures.csv" # two columns of comma-separated values: gene id, continuous measure of significance. To perform standard GO enrichment analysis based on Fisher's exact test, use binary measure (0 or 1, i.e., either sgnificant or not).
+goAnnotations="2019-08-14-Genes-GO-Annotations-Table.tab" # two-column, tab-delimited, one line per gene, multiple GO terms separated by semicolon.
+goDatabase="go.obo" # download from http://www.geneontology.org/GO.downloads.ontology.shtml
+goDivision="BP" # BP for biological processes
+source("gomwu.functions.R")
+```
+
+#### Run GO-MWU
+
+```{r}
+# Calculating stats. It might take ~3 min for MF and BP. Do not rerun it if you just want to replot the data with different cutoffs, go straight to gomwuPlot. If you change any of the numeric values below, delete the files that were generated in previos runs first.
+gomwuStats(input, goDatabase, goAnnotations, goDivision,
+	perlPath="perl", # replace with full path to perl executable if it is not in your system's PATH already
+	largest=0.1,  # a GO category will not be considered if it contains more than this fraction of the total number of genes
+	smallest=5,   # a GO category should contain at least this many genes to be considered
+	clusterCutHeight=0.25) # threshold for merging similar (gene-sharing) terms. See README for details.
+# There are no GO terms pass 10% FDR.
+```
+
+
+
+
+
+
+
+
+
+
+
+
