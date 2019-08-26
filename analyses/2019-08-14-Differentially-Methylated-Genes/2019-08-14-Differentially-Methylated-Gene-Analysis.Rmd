@@ -379,7 +379,7 @@ find *header
 head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.annotated-percentMeth.header
 ```
 
-# Calculate median percent methylation
+# Calculate median percent methylation for each sample
 
 I can do this within R, so the first step is to import the files.
 
@@ -514,6 +514,29 @@ head(fullPercentMethExpanded) #Confirm dataframe creation
 ```{r}
 write.csv(fullPercentMethExpanded, "2019-08-22-Gene-Median-Percent-Methylation-By-Sample.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
+
+# Calculate methylation differences between treatments
+
+If I have any differentially methylated genes, I want methylation differences for each gene by treatment to use with gene enrichment. To do this, I'm going to calculate median percent methylation by treatment, then subtract ambient values from treatment values.
+
+```{r}
+ambientSamples <- subset(fullPercentMethExpanded, subset = fullPercentMethExpanded$treatment == "Ambient") #Subset ambient samples
+treatmentSamples <- subset(fullPercentMethExpanded, subset = fullPercentMethExpanded$treatment == "Treatment") #Subset treatment samples
+head(treatmentSamples) #Confirm subset
+```
+
+```{r}
+ambientSamplesPercentMeth <- aggregate(percentMeth ~ geneID, data = ambientSamples, FUN = median) #Calculate median methylation by gene for ambient samples
+treatmentSamplesPercentMeth <- aggregate(percentMeth ~ geneID, data = treatmentSamples, FUN = median) #Calculate median methylation by gene for treatment samples
+head(treatmentSamplesPercentMeth) #Confirm calculations
+```
+
+```{r}
+fullMethDiff <- data.frame("geneID" = ambientSamplesPercentMeth$geneID,
+                           "meth.diff" = (treatmentSamplesPercentMeth$percentMeth - ambientSamplesPercentMeth$percentMeth)) #Create a new dataframe with geneID and methylation differences (treatment - ambient)
+head(fullMethDiff) #Confirm dataframe creation
+```
+
 
 # Identifying differentially methylated genes
 
@@ -670,3 +693,24 @@ head(uncorrSigGenesDML) #Confirm merge
 ```{r}
 write.csv(uncorrSigGenesDML, "2019-08-14-DMG-KW-Test-Results-DMLOnly-Uncorrected-Sig.csv", quote = FALSE, row.names = FALSE) #Save file
 ```
+
+# Gene enrichment with GO-MWU
+
+## Format GO-MWU inputs
+
+### GO annotations table
+
+
+
+## REMOVE LINES WITHOUT GO ANNOTATIONS
+
+
+### Table of significance measures
+
+#### Correct p-values for hypermethylated genes
+
+#### Correct p-values for hypomethylated genes
+
+#### Combine tables with corrected p-values
+
+## Conduct gene enrichment
