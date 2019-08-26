@@ -596,18 +596,6 @@ range(KWTestResults$adj.p, na.rm = TRUE) #Not counting NAs, there are no genes w
 write.csv(KWTestResults, "2019-08-14-DMG-KW-Test-Results.csv", quote = FALSE, row.names = FALSE) #Save file
 ```
 
-I will subset significant uncorrected p-values since it's an exploratory study.
-
-```{r}
-uncorrSigKWTestResults <- subset(KWTestResults, subset = KWTestResults$p.value < 0.05) #Subset genes with uncorrected p-values less than 0.05
-length(uncorrSigKWTestResults$geneID) #There are 223 significant genes.
-head(uncorrSigKWTestResults) #Confirm subset
-```
-
-```{r}
-write.csv(uncorrSigKWTestResults, "2019-08-14-DMG-KW-Test-Results-Uncorrected-Sig.csv", quote = FALSE, row.names = FALSE) #Save file
-```
-
 #### Match statistical test results to genes with DML
 
 Liew et al. filtered their list of genes before statistical testing by selecting genes with at least five methylated positions. To see if filtering has any effect on the adjusted p-values, I will start by selecting only genes with DML.
@@ -638,7 +626,34 @@ range(KWTestResultsDML$DML.adj.p) #There are no significant p-values after corre
 write.csv(KWTestResultsDML, "2019-08-14-DMG-KW-Test-Results-DMLOnly.csv", quote = FALSE, row.names = FALSE) #Save file
 ```
 
-I will subet uncorrected significant p-values since this is an exploratory study.
+# Annotate differentially methylated genes
+
+I will consider genes with significant uncorrected p-values as differentially methylated genes (DMG) since this is an exploratory study.
+
+## All genes
+
+```{r}
+uncorrSigKWTestResults <- subset(KWTestResults, subset = KWTestResults$p.value < 0.05) #Subset genes with uncorrected p-values less than 0.05
+length(uncorrSigKWTestResults$geneID) #There are 223 significant genes.
+head(uncorrSigKWTestResults) #Confirm subset
+```
+
+```{r}
+colnames(geneAnnotationsCondensedUniprotGOterms)[6] <- "geneID" #Rename column so it's consistent with KW results
+colnames(geneAnnotationsCondensedUniprotGOterms) #Confirm column was renamed
+```
+
+```{r}
+uncorrSigGenes <- unique(merge(x = uncorrSigKWTestResults, y = geneAnnotationsCondensedUniprotGOterms, by = "geneID")) #Annotate DMG and remove any merging artifacts
+length(uncorrSigGenes$geneID) == length(uncorrSigKWTestResults$geneID) #Check that gene IDs are not duplicated
+head(uncorrSigGenes) #Confirm merge
+```
+
+```{r}
+write.csv(uncorrSigGenes, "2019-08-14-DMG-KW-Test-Results-Uncorrected-Sig.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
+## DMG with DML
 
 ```{r}
 uncorrSigKWTestResultsDML <- subset(KWTestResultsDML, subset = KWTestResultsDML$p.value < 0.05) #Subset p-values that are less than 0.05
@@ -647,6 +662,11 @@ head(uncorrSigKWTestResultsDML) #Confirm subset
 ```
 
 ```{r}
-write.csv(uncorrSigKWTestResultsDML, "2019-08-14-DMG-KW-Test-Results-DMLOnly-Uncorrected-Sig.csv", quote = FALSE, row.names = FALSE) #Save file
+uncorrSigGenesDML <- unique(merge(x = uncorrSigKWTestResultsDML, y = geneAnnotationsCondensedUniprotGOterms, by = "geneID")) #Annotate DMG and remove any merging artifacts
+length(uncorrSigGenesDML$geneID) == length(uncorrSigKWTestResultsDML$geneID) #Check that gene IDs are not duplicated
+head(uncorrSigGenesDML) #Confirm merge
 ```
 
+```{r}
+write.csv(uncorrSigGenesDML, "2019-08-14-DMG-KW-Test-Results-DMLOnly-Uncorrected-Sig.csv", quote = FALSE, row.names = FALSE) #Save file
+```
