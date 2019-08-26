@@ -673,6 +673,12 @@ head(uncorrSigGenes) #Confirm merge
 ```
 
 ```{r}
+uncorrSigGenes <- unique(merge(x = uncorrSigGenes, y = fullMethDiff, by = "geneID")) #Add meth.diff information
+length(uncorrSigGenes$geneID) == length(uncorrSigKWTestResults$geneID) #Check that gene IDs are not duplicated
+head(uncorrSigGenes) #Confirm merge
+```
+
+```{r}
 write.csv(uncorrSigGenes, "2019-08-14-DMG-KW-Test-Results-Uncorrected-Sig.csv", quote = FALSE, row.names = FALSE) #Save file
 ```
 
@@ -686,6 +692,12 @@ head(uncorrSigKWTestResultsDML) #Confirm subset
 
 ```{r}
 uncorrSigGenesDML <- unique(merge(x = uncorrSigKWTestResultsDML, y = geneAnnotationsCondensedUniprotGOterms, by = "geneID")) #Annotate DMG and remove any merging artifacts
+length(uncorrSigGenesDML$geneID) == length(uncorrSigKWTestResultsDML$geneID) #Check that gene IDs are not duplicated
+head(uncorrSigGenesDML) #Confirm merge
+```
+
+```{r}
+uncorrSigGenesDML <- unique(merge(x = uncorrSigGenesDML, y = fullMethDiff, by = "geneID")) #Add meth.diff information
 length(uncorrSigGenesDML$geneID) == length(uncorrSigKWTestResultsDML$geneID) #Check that gene IDs are not duplicated
 head(uncorrSigGenesDML) #Confirm merge
 ```
