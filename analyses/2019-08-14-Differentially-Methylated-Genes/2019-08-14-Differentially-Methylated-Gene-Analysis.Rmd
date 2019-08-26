@@ -596,6 +596,18 @@ range(KWTestResults$adj.p, na.rm = TRUE) #Not counting NAs, there are no genes w
 write.csv(KWTestResults, "2019-08-14-DMG-KW-Test-Results.csv", quote = FALSE, row.names = FALSE) #Save file
 ```
 
+I will subset significant uncorrected p-values since it's an exploratory study.
+
+```{r}
+uncorrSigKWTestResults <- subset(KWTestResults, subset = KWTestResults$p.value < 0.05) #Subset genes with uncorrected p-values less than 0.05
+length(uncorrSigKWTestResults$geneID) #There are 223 significant genes.
+head(uncorrSigKWTestResults) #Confirm subset
+```
+
+```{r}
+write.csv(uncorrSigKWTestResults, "2019-08-14-DMG-KW-Test-Results-Uncorrected-Sig.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
 #### Match statistical test results to genes with DML
 
 Liew et al. filtered their list of genes before statistical testing by selecting genes with at least five methylated positions. To see if filtering has any effect on the adjusted p-values, I will start by selecting only genes with DML.
@@ -625,3 +637,16 @@ range(KWTestResultsDML$DML.adj.p) #There are no significant p-values after corre
 ```{r}
 write.csv(KWTestResultsDML, "2019-08-14-DMG-KW-Test-Results-DMLOnly.csv", quote = FALSE, row.names = FALSE) #Save file
 ```
+
+I will subet uncorrected significant p-values since this is an exploratory study.
+
+```{r}
+uncorrSigKWTestResultsDML <- subset(KWTestResultsDML, subset = KWTestResultsDML$p.value < 0.05) #Subset p-values that are less than 0.05
+length(uncorrSigKWTestResultsDML$geneID) #There are 6 genes with DML that are differentially methylated
+head(uncorrSigKWTestResultsDML) #Confirm subset
+```
+
+```{r}
+write.csv(uncorrSigKWTestResultsDML, "2019-08-14-DMG-KW-Test-Results-DMLOnly-Uncorrected-Sig.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
