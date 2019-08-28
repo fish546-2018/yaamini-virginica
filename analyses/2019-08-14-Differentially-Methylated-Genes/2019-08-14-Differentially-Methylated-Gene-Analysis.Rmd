@@ -892,7 +892,7 @@ head(parentGOBPGenesSigGOslim)
 ```
 
 ```{r}
-sum(is.na(parentGOBPGenesSigGOslim$GOslim)) #Count how many DMG do not have GOslim entries. 199/223 do not have GO-MWU entries.
+sum(is.na(parentGOBPGenesSigGOslim$GOslim)) #Count how many entries do not have GOslim terms. 52/674 do not have GO-MWU entries.
 ```
 
 ```{r}
