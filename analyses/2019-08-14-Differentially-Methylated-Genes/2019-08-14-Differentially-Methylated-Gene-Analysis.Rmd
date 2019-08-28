@@ -881,7 +881,7 @@ I won't break down hypermethylated and hypomethylated DMG because I'm not sure h
 GO-MWU maps to the highest level GOterm it can, but I want to see if I can simplify those higher level GOterms to GOslim terms.
 
 ```{r}
-CVGOslim <- read.delim("Blastquery-GOslim.sorted", sep = "\t", header = FALSE) #Import data with Genbank ID and GOslim terms
+CVGOslim <- read.delim("Blastquery-GOslim-BP.sorted", sep = "\t", header = FALSE) #Import data with Genbank ID and GOslim terms
 colnames(CVGOslim) <- c("Genbank", "GOslim") #Add column names
 head(CVGOslim) #Confirm import
 ```
@@ -1026,3 +1026,31 @@ head(parentGOMFGenesSigCounts) #Confirm counts
 write.csv(parentGOMFGenesSigCounts, "2019-08-14-DMG-Parent-GOSlim-Frequency-MF.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
+
+###### Map to GOslim terms
+
+```{r}
+CVGOslimMF <- read.delim("Blastquery-GOslim-MF.sorted", sep = "\t", header = FALSE) #Import data with Genbank ID and GOslim terms
+colnames(CVGOslimMF) <- c("Genbank", "GOslim") #Add column names
+head(CVGOslimMF) #Confirm import
+```
+
+```{r}
+parentGOMFGenesSigGOslim <- unique(merge(x = parentGOMFGenesSig, y = CVGOslimMF, by = "Genbank", all.x = TRUE)) #Merge parent GOterms with GOslim terms. Keep all entries even if they don't have matching GOslim terms. Remove any merging artifacts
+head(parentGOMFGenesSigGOslim)
+```
+
+```{r}
+sum(is.na(parentGOMFGenesSigGOslim$GOslim)) #Count how many entries do not have GOslim terms. 61/374 do not have GO-MWU entries.
+```
+
+```{r}
+parentGOMFGenesSigGOslimCounts <- as.data.frame(table(parentGOMFGenesSigGOslim$GOslim)) #Count the frequency of each GOslim term
+colnames(parentGOMFGenesSigGOslimCounts) <- c("CVGOslim", "frequency") #Rename columns
+parentGOMFGenesSigGOslimCounts <- subset(parentGOMFGenesSigGOslimCounts, subset = frequency > 0) #Remove residual factors
+head(parentGOMFGenesSigGOslimCounts) #Confirm counts
+```
+
+```{r}
+write.csv(parentGOMFGenesSigGOslimCounts, "2019-08-14-DMG-CVGOSlim-Frequency-MF.csv", row.names = FALSE, quote = FALSE) #Save file
+```
