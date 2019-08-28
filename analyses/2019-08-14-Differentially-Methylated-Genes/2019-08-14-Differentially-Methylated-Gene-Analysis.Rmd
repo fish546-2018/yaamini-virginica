@@ -855,7 +855,7 @@ write.csv(parentGOBPGenesCounts, "2019-08-14-Genes-Parent-GOSlim-Frequency-BP.cs
 GO-MWU takes all genes into account, but there may be some differences in parental GOslim terms if I only look at differentially methylated genes.
 
 ```{r}
-parentGOBPGenesSig <- unique(merge(x = parentGOBPGenes, y = uncorrSigGenes, by = "Genbank", all.y = TRUE)) #Merge parent GOslim terms with annotated DMG. Keep all annotated genes that do not have matching GO-MWU information. Remove any merging artifacts.
+parentGOBPGenesSig <- unique(merge(x = parentGOBPGenes, y = uncorrSigGenes, by = "Genbank", all.y = TRUE)) #Merge parent GOterms with annotated DMG. Keep all annotated genes that do not have matching GO-MWU information. Remove any merging artifacts.
 head(parentGOBPGenesSig) #Confirm merge
 ```
 
@@ -875,6 +875,36 @@ write.csv(parentGOBPGenesSigCounts, "2019-08-14-DMG-Parent-GOSlim-Frequency-BP.c
 ```
 
 I won't break down hypermethylated and hypomethylated DMG because I'm not sure how valuable that information is.
+
+###### Map to GOslim terms
+
+GO-MWU maps to the highest level GOterm it can, but I want to see if I can simplify those higher level GOterms to GOslim terms.
+
+```{r}
+CVGOslim <- read.delim("Blastquery-GOslim.sorted", sep = "\t", header = FALSE) #Import data with Genbank ID and GOslim terms
+colnames(CVGOslim) <- c("Genbank", "GOslim") #Add column names
+head(CVGOslim) #Confirm import
+```
+
+```{r}
+parentGOBPGenesSigGOslim <- unique(merge(x = parentGOBPGenesSig, y = CVGOslim, by = "Genbank", all.x = TRUE)) #Merge parent GOterms with GOslim terms. Keep all entries even if they don't have matching GOslim terms. Remove any merging artifacts
+head(parentGOBPGenesSigGOslim)
+```
+
+```{r}
+sum(is.na(parentGOBPGenesSigGOslim$GOslim)) #Count how many DMG do not have GOslim entries. 199/223 do not have GO-MWU entries.
+```
+
+```{r}
+parentGOBPGenesSigGOslimCounts <- as.data.frame(table(parentGOBPGenesSigGOslim$GOslim)) #Count the frequency of each GOslim term
+colnames(parentGOBPGenesSigGOslimCounts) <- c("CVGOslim", "frequency") #Rename columns
+parentGOBPGenesSigGOslimCounts <- subset(parentGOBPGenesSigGOslimCounts, subset = frequency > 0) #Remove residual factors
+head(parentGOBPGenesSigGOslimCounts) #Confirm counts
+```
+
+```{r}
+write.csv(parentGOBPGenesSigGOslimCounts, "2019-08-14-DMG-CVGOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
+```
 
 ### Cellular components
 
