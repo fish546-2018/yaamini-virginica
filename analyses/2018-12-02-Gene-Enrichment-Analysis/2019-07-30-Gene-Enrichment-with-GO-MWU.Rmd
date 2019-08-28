@@ -277,6 +277,34 @@ head(parentGOBPDMLCounts) #Confirm counts
 write.csv(parentGOBPDMLCounts, "2019-07-30-condensedDML-Parent-GOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
+###### Map to GOslim terms
+
+```{r}
+CVGOslim <- read.delim("../2019-08-14-Differentially-Methylated-Genes/Blastquery-GOslim.sorted", sep = "\t", header = FALSE) #Import GOslim information
+colnames(CVGOslim) <- c("Genbank", "GOslim") #Add column names
+head(CVGOslim) #Confirm import
+```
+
+```{r}
+parentGOBPDMLGOslim <- unique(merge(x = parentGOBPDML, y = CVGOslim, by = "Genbank", all.x = TRUE)) #Merge GO-MWU with GOslim information, retaining all GO-MWU entries. Remove any merging artifacts
+head(parentGOBPDMLGOslim) #Confirm merge
+```
+
+```{r}
+sum(is.na(parentGOBPDMLGOslim$GOslim)) #Count how many entries do not have GOslim terms. 356/6111 do not have GO-MWU entries.
+```
+
+```{r}
+parentGOBPDMLGOslimCounts <- as.data.frame(table(parentGOBPDMLGOslim$GOslim)) #Count the frequency of each GOslim term
+colnames(parentGOBPDMLGOslimCounts) <- c("CVGOslim", "frequency") #Rename columns
+parentGOBPDMLGOslimCounts <- subset(parentGOBPDMLGOslimCounts, subset = frequency > 0) #Remove residual factors
+head(parentGOBPDMLGOslimCounts) #Confirm counts
+```
+
+```{r}
+write.csv(parentGOBPDMLGOslimCounts, "2019-07-30-condensedDML-CVGOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
 ###### Hypermethylated loci
 
 The division between hypermethylated and hypomethylated biological processes may be interesting too.
@@ -306,6 +334,26 @@ head(parentGOBPCondensedHyperCounts) #Confirm counts
 write.csv(parentGOBPCondensedHyperCounts, "2019-07-30-condensedDMLHyper-Parent-GOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
+```{r}
+parentGOBPCondensedHyperGOslim <- subset(x = parentGOBPDMLGOslim, subset = parentGOBPDMLGOslim$meth.diff > 0) #Subset hypermethylated loci
+head(parentGOBPCondensedHyperGOslim) #Confirm subset
+```
+
+```{r}
+sum(is.na(parentGOBPCondensedHyperGOslim$GOslim)) #Count how many entries do not have GOslim terms. 164/1016 do not have GO-MWU entries.
+```
+
+```{r}
+parentGOBPCondensedHyperGOslimCounts <- as.data.frame(table(parentGOBPCondensedHyperGOslim$GOslim)) #Count the frequency of each GOslim term
+colnames(parentGOBPCondensedHyperGOslimCounts) <- c("CVGOslim", "frequency") #Rename columns
+parentGOBPCondensedHyperGOslimCounts <- subset(parentGOBPCondensedHyperGOslimCounts, subset = frequency > 0) #Remove residual factors
+head(parentGOBPCondensedHyperGOslimCounts) #Confirm counts
+```
+
+```{r}
+write.csv(parentGOBPCondensedHyperGOslimCounts, "2019-07-30-condensedDMLHyper-CVGOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
 ###### Hypomethylated loci
 
 ```{r}
@@ -331,6 +379,26 @@ head(parentGOBPCondensedHypoCounts) #Confirm counts
 
 ```{r}
 write.csv(parentGOBPCondensedHypoCounts, "2019-07-30-condensedDMLHypo-Parent-GOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
+```{r}
+parentGOBPCondensedHypoGOslim <- subset(x = parentGOBPDMLGOslim, subset = parentGOBPDMLGOslim$meth.diff < 0) #Subset hypermethylated loci
+head(parentGOBPCondensedHypoGOslim) #Confirm subset
+```
+
+```{r}
+sum(is.na(parentGOBPCondensedHypoGOslim$GOslim)) #Count how many entries do not have GOslim terms. 192/3169 do not have GO-MWU entries.
+```
+
+```{r}
+parentGOBPCondensedHypoGOslimCounts <- as.data.frame(table(parentGOBPCondensedHypoGOslim$GOslim)) #Count the frequency of each GOslim term
+colnames(parentGOBPCondensedHypoGOslimCounts) <- c("CVGOslim", "frequency") #Rename columns
+parentGOBPCondensedHypoGOslimCounts <- subset(parentGOBPCondensedHypoGOslimCounts, subset = frequency > 0) #Remove residual factors
+head(parentGOBPCondensedHypoGOslimCounts) #Confirm counts
+```
+
+```{r}
+write.csv(parentGOBPCondensedHyperGOslimCounts, "2019-07-30-condensedDMLHyper-CVGOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
 ### Cellular components
