@@ -398,7 +398,7 @@ head(parentGOBPCondensedHypoGOslimCounts) #Confirm counts
 ```
 
 ```{r}
-write.csv(parentGOBPCondensedHyperGOslimCounts, "2019-07-30-condensedDMLHyper-CVGOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
+write.csv(parentGOBPCondensedHypoGOslimCounts, "2019-07-30-condensedDMLHypo-CVGOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
 ### Cellular components
