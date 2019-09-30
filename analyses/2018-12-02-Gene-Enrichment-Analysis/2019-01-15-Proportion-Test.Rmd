@@ -69,6 +69,19 @@ totalVersusEnrichedTest$expected #Look at expected values
 totalVersusEnrichedTest$residuals #Look at residuals
 ```
 
+### Total CpGs vs. methylated CpGs
+
+```{r}
+totalVersusMethylated <- overlapData[, c(1,3)] #Subset data for statistical testing
+totalVersusMethylated <- totalVersusMethylated[-6, ] #Remove totalLines row
+head(totalVersusMethylated) #Confirm changes
+```
+
+```{r}
+totalVersusMethylatedTest <- chisq.test(t(totalVersusMethylated)) #Conduct a chi-squared test
+totalVersusMethylatedTest #The distribution of methylated CpGs is significantly different from all CpG
+```
+
 ### Enriched CpGs vs. methylated CpGs
 
 Are methylated CpGs more populous in certain genomic regions?
