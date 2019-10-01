@@ -401,6 +401,16 @@ write.csv(differentialMethylationStatsFilteredCov5Destrand, "2018-10-25-Loci-Ana
 ```
 
 ```{r}
+DMLchrCounts <-as.data.frame(table(differentialMethylationStatsFilteredCov5Destrand$chr)) #Count the number of DML/chromosome
+colnames(DMLchrCounts) <- c("chr", "frequency") #Rename columns
+head(DMLchrCounts)
+```
+
+```{r}
+write.csv(DMLchrCounts, "2019-09-30-DML-per-Chromosome.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
+```{r}
 diffMethStats50FilteredCov5Destrand <- getMethylDiff(differentialMethylationStatsFilteredCov5Destrand, difference = 50, qvalue = 0.01) #Identify loci that are at least 50% different
 head(diffMethStats50FilteredCov5Destrand) #Confirm creation
 ```
