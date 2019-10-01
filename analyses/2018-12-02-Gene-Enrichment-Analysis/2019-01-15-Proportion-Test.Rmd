@@ -295,12 +295,12 @@ head(enrichedVersusDMLProportions) #Confirm subset
 ```
 
 ```{r}
-#pdf("2019-04-10-Enriched-Versus-DML.pdf", height = 8.5, width = 11)
+pdf("2019-04-10-Enriched-Versus-DML.pdf", height = 8.5, width = 11)
 par(mar = c(3,5,1,1), oma = c(1, 1, 1, 15)) #Change figure boundaries
 
 barplot(t(t(enrichedVersusDMLProportions)), 
         axes = FALSE, 
-        names.arg = c("MBD-Enriched", "DML"),
+        names.arg = c("Loci with 5x Coverage", "DML"),
         cex.names = 1.5,
         ylim = c(0,100),
         col = c("grey20", "grey40", "grey60", "grey80", "grey100")) #Create a stacked barplot. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
@@ -317,7 +317,7 @@ legend("topright",
         pt.bg = c("grey20", "grey40", "grey60", "grey80", "grey100"),
        bty = "n",
        cex = 1.5) #Place a legend in the top right of the figure with no box. pch = 22 has a background and outline. col changes the outline, pt.bg changes the point fill
-#dev.off()
+dev.off()
 ```
 
 
