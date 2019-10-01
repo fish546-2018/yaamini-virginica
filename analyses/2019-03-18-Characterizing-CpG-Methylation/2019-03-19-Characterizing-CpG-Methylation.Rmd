@@ -28,10 +28,10 @@ head(cpgMethylation) #Confirm import
 ```{r}
 #pdf("2019-04-10-5x-CpG-Frequency-Distribution.pdf", width = 11, height = 8.5)
 hist(x = cpgMethylation$methylation, axes = FALSE, xlab = "", ylab = "", main = "", col = "grey80", xaxs = "i", yaxs = "i") #Create base plot
-axis(side = 1, col = "grey80", at = seq(from = 0, to = 100, by = 10)) #Add x-axis
-mtext(side = 1, text = "Methylation (%)", line = 3) #Add x-axis label
-axis(side = 2, col = "grey80", las = 2, labels = c("0", "2", "4", "6"), at = c(0, 2e+05, 4e+05, 6e+05)) #add y-axis
-mtext(side = 2, text = "Frequency (x100,000)", line = 2.5) #Add y-axis label
+axis(side = 1, col = "grey80", at = seq(from = 0, to = 100, by = 10), cex.axis = 1.2) #Add x-axis
+mtext(side = 1, text = "Methylation (%)", line = 3, cex = 1.5) #Add x-axis label
+axis(side = 2, col = "grey80", las = 2, labels = c("0", "2", "4", "6"), at = c(0, 2e+05, 4e+05, 6e+05), cex.axis = 1.2) #add y-axis
+mtext(side = 2, text = "Frequency (x100,000)", line = 2.5, cex = 1.5) #Add y-axis label
 #dev.off()
 ```
 
