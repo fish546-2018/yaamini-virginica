@@ -401,7 +401,7 @@ write.csv(differentialMethylationStatsFilteredCov5Destrand, "2018-10-25-Loci-Ana
 ```
 
 ```{r}
-DMLchrCounts <-as.data.frame(table(differentialMethylationStatsFilteredCov5Destrand$chr)) #Count the number of DML/chromosome
+DMLchrCounts <-as.data.frame(table(diffMethStats50FilteredCov5Destrand$chr)) #Count the number of DML/chromosome
 colnames(DMLchrCounts) <- c("chr", "frequency") #Rename columns
 head(DMLchrCounts)
 ```
