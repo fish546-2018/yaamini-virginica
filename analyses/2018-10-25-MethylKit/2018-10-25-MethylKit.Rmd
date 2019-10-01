@@ -401,16 +401,6 @@ write.csv(differentialMethylationStatsFilteredCov5Destrand, "2018-10-25-Loci-Ana
 ```
 
 ```{r}
-DMLchrCounts <-as.data.frame(table(diffMethStats50FilteredCov5Destrand$chr)) #Count the number of DML/chromosome
-colnames(DMLchrCounts) <- c("chr", "frequency") #Rename columns
-head(DMLchrCounts)
-```
-
-```{r}
-write.csv(DMLchrCounts, "2019-09-30-DML-per-Chromosome.csv", row.names = FALSE, quote = FALSE) #Save file
-```
-
-```{r}
 diffMethStats50FilteredCov5Destrand <- getMethylDiff(differentialMethylationStatsFilteredCov5Destrand, difference = 50, qvalue = 0.01) #Identify loci that are at least 50% different
 head(diffMethStats50FilteredCov5Destrand) #Confirm creation
 ```
@@ -439,6 +429,64 @@ head(diffMethStats50FilteredCov5DestrandHypo) #Confirm creation
 
 ```{r}
 write.csv(diffMethStats50FilteredCov5DestrandHypo, "2018-10-25-Loci-Analysis/2019-04-05-Differentially-Methylated-Loci-Filtered-Destrand-50-Cov5-Hypomethylated.csv") #Save table as .csv
+```
+
+#### DML distribution figure
+
+I want to plot the distribution of DML across the *C. virginica* genome and compare it to the number of genes in each chromosome.
+
+##### Calculate distribution of DML across chromosomes
+
+```{r}
+DMLchrCounts <-as.data.frame(table(diffMethStats50FilteredCov5Destrand$chr)) #Count the number of DML/chromosome
+DMLchrCounts$chr <- c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10") #Create column with chr name
+DMLchrCounts <- DMLchrCounts[,-1] #Remove column with chromosome RefSeq ID
+DMLchrCounts <- DMLchrCounts[,c(2,1)] #Reorganize columns
+colnames(DMLchrCounts) <- c("chr", "DMLCount") #Rename columns
+head(DMLchrCounts) #Confirm formatting
+```
+
+```{r}
+write.csv(DMLchrCounts, "2019-09-30-DML-per-Chromosome.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
+##### [*C. virginica* genome information from NCBI](https://www.ncbi.nlm.nih.gov/genome/398)
+
+```{r}
+DMLchrCounts$geneCount <- c(3932, 4137, 4712, 3896, 6239, 2630, 3015, 4445, 4960, 1527) #Create column with number of gene sequences in each chromosome
+DMLchrCounts$DMLbyGenes <- (DMLchrCounts$DMLCount / DMLchrCounts$geneCount)*100
+head(DMLchrCounts) #Confirm dataframe creation
+```
+
+##### Create figure
+
+```{r}
+#pdf("2019-09-30-DML-and-Gene-Distribution.pdf", height = 8.5, width = 11) #Save figure as a pdf
+
+par(mar = c(5,7,2,10)) #Change figure boundaries
+
+DMLbarplot <- barplot(as.matrix(t(DMLchrCounts$DMLCount)),
+                      axes = FALSE, 
+                      names.arg = DMLchrCounts$chr,
+                      cex.names = 1.5,
+                      xlim = c(0.7,11.5),
+                      ylim = c(0,150),
+                      col = "grey80") #Create a barplot and save as a new object. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis. The object contains x coordinates for bars, so xlim is set at 12 to compensate for maximum value of 11.5
+mtext(side = 1, "Chromosome", line = 3, cex = 1.5) #Add x-axis label
+axis(side = 2, line = 1.5, at = seq(0, 150, by = 50), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis for DML counts
+mtext(side = 2, "Number of DML", line = 5, cex = 1.5) #Add y-axis label for DML counts
+
+par(new = TRUE) #Create a new plot
+plot(x = DMLbarplot,
+     y = DMLchrCounts$geneCount,
+     type = "b",
+     axes = FALSE, xlab = "", ylab = "", xaxs = "i", yaxs = "i",
+     pch = 16, col = "grey20",
+     xlim = c(0,12), ylim = c(0,6500)) #Plot points and lines (type = "b") for gene count by chromosome. Use the coordinates from DMLbarplot (x = DMLbarplot) and set xlim = (0,12) so plots are lined up. Use axes = FALSE to remove both axes. Remove x and y lables (xlab = ""; ylab = ""). Set ylim = (0,6500) to account for max y-values. Use xaxs and yxaxs to remove space between axes.
+axis(side = 4, line = 1.5, at = seq(0, 6500, by = 500), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis for gene sequence counts
+mtext(side = 4, "Number of Genes", line = 6, cex = 1.5) #Add y-axis label for gene sequence counts
+
+#dev.off() #Turn off plotting device
 ```
 
 # Differentially methylated regions
