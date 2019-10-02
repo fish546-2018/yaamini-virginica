@@ -406,6 +406,73 @@ head(DMLGeneAnnotation) #Confirm subset
 write.csv(DMLGeneAnnotation, "2019-06-20-DML-Gene-Annotation.csv") #Save file
 ```
 
+### Characterize DML per gene
+
+```{r}
+DMLGeneAnnotationNomRNA <- unique(DMLGeneAnnotation[,-c(8:11,13:18, 20:23)]) #Remove mRNA information from annotation to quantify #DML/gene (and not by mRNA). Also eliminate Uniprot columns. Use unique to remove any lines that are merging artifacts
+head(DMLGeneAnnotationNomRNA) #Confirm column removal
+```
+
+```{r}
+DMLbyGeneCounts <- as.data.frame(table(DMLGeneAnnotationNomRNA$geneID)) #Count the number of DML/gene
+colnames(DMLbyGeneCounts) <- c("geneID", "DMLCount") #Change column names
+head(DMLbyGeneCounts) #Confirm formatting
+```
+
+```{r}
+mean(DMLbyGeneCounts$DMLCount) #Calculate mean number of DML in genes with DML
+median(DMLbyGeneCounts$DMLCount) #Calculate median number of DML in genes with DML
+max(DMLbyGeneCounts$DMLCount) #Calculate max number of DML in a single gene
+```
+
+```{r}
+sum(DMLbyGeneCounts$DMLCount == 1) #Count number of genes with 1 DML
+sum(DMLbyGeneCounts$DMLCount == 2) #Count number of genes with 2 DML
+sum(DMLbyGeneCounts$DMLCount == 3) #Count number of genes with 3 DML
+sum(DMLbyGeneCounts$DMLCount == 4) #Count number of genes with 4 DML
+sum(DMLbyGeneCounts$DMLCount == 5) #Count number of genes with 5 DML
+```
+
+```{r}
+genes2DML <- DMLbyGeneCounts[DMLbyGeneCounts$DMLCount == 2,] #Subset genes with 2 DML
+genes2DMLAnnotations <- unique(merge(x = genes2DML, y = DMLGeneAnnotationNomRNA, by = "geneID")) #Merge genes with 2 DML with annotation information. Use unique to remove merging artifacts
+head(genes2DMLAnnotations) #Confirm merge
+```
+
+```{r}
+write.csv(genes2DMLAnnotations, "2019-10-01-Genes-with-2-DML.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
+```{r}
+genes3DML <- DMLbyGeneCounts[DMLbyGeneCounts$DMLCount == 3,] #Subset genes with 3 DML
+genes3DMLAnnotations <- unique(merge(x = genes3DML, y = DMLGeneAnnotationNomRNA, by = "geneID")) #Merge genes with 3 DML with annotation information. Use unique to remove merging artifacts
+head(genes3DMLAnnotations) #Confirm merge
+```
+
+```{r}
+write.csv(genes3DMLAnnotations, "2019-10-01-Genes-with-3-DML.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
+```{r}
+genes4DML <- DMLbyGeneCounts[DMLbyGeneCounts$DMLCount == 4,] #Subset genes with 4 DML
+genes4DMLAnnotations <- unique(merge(x = genes4DML, y = DMLGeneAnnotationNomRNA, by = "geneID")) #Merge genes with 4 DML with annotation information. Use unique to remove merging artifacts
+head(genes4DMLAnnotations) #Confirm merge
+```
+
+```{r}
+write.csv(genes4DMLAnnotations, "2019-10-01-Genes-with-4-DML.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
+```{r}
+genes5DML <- DMLbyGeneCounts[DMLbyGeneCounts$DMLCount == 5,] #Subset genes with 2 DML
+genes5DMLAnnotations <- unique(merge(x = genes5DML, y = DMLGeneAnnotationNomRNA, by = "geneID")) #Merge genes with 5 DML with annotation information. Use unique to remove merging artifacts
+head(genes5DMLAnnotations) #Confirm merge
+```
+
+```{r}
+write.csv(genes5DMLAnnotations, "2019-10-01-Genes-with-5-DML.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
 ### Hypermethylated DML-gene overlaps
 
 ```{r}
