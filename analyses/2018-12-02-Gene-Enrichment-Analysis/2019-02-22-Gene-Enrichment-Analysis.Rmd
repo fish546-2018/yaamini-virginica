@@ -406,7 +406,9 @@ head(DMLGeneAnnotation) #Confirm subset
 write.csv(DMLGeneAnnotation, "2019-06-20-DML-Gene-Annotation.csv") #Save file
 ```
 
-### Characterize DML per gene
+### Characterize DML distribution in genes
+
+#### Count the number of DML per gene
 
 ```{r}
 DMLGeneAnnotationNomRNA <- unique(DMLGeneAnnotation[,-c(8:11,13:18, 20:23)]) #Remove mRNA information from annotation to quantify #DML/gene (and not by mRNA). Also eliminate Uniprot columns. Use unique to remove any lines that are merging artifacts
@@ -431,6 +433,26 @@ sum(DMLbyGeneCounts$DMLCount == 2) #Count number of genes with 2 DML
 sum(DMLbyGeneCounts$DMLCount == 3) #Count number of genes with 3 DML
 sum(DMLbyGeneCounts$DMLCount == 4) #Count number of genes with 4 DML
 sum(DMLbyGeneCounts$DMLCount == 5) #Count number of genes with 5 DML
+```
+
+```{r}
+numberDMLinGenes <- data.frame("DMLCount" = c("1", "2", "3", "4", "5"),
+                               "geneCount" = c(sum(DMLbyGeneCounts$DMLCount == 1),
+                                               sum(DMLbyGeneCounts$DMLCount == 2),
+                                               sum(DMLbyGeneCounts$DMLCount == 3),
+                                               sum(DMLbyGeneCounts$DMLCount == 4),
+                                               sum(DMLbyGeneCounts$DMLCount == 5))) #Create dataframe for plotting
+head(numberDMLinGenes) #Confirm creation
+```
+
+```{r}
+genes1DML <- DMLbyGeneCounts[DMLbyGeneCounts$DMLCount == 1,] #Subset genes with 1 DML
+genes1DMLAnnotations <- unique(merge(x = genes1DML, y = DMLGeneAnnotationNomRNA, by = "geneID")) #Merge genes with 2 DML with annotation information. Use unique to remove merging artifacts
+head(genes1DMLAnnotations) #Confirm merge
+```
+
+```{r}
+write.csv(genes1DMLAnnotations, "2019-10-01-Genes-with-1-DML.csv", quote = FALSE, row.names = FALSE) #Save file
 ```
 
 ```{r}
@@ -471,6 +493,263 @@ head(genes5DMLAnnotations) #Confirm merge
 
 ```{r}
 write.csv(genes5DMLAnnotations, "2019-10-01-Genes-with-5-DML.csv", quote = FALSE, row.names = FALSE) #Save file
+```
+
+#### Characterize types of DML in genes
+
+```{r}
+sum(genes1DMLAnnotations$meth.diff > 0) #Count number of genes with 1 DML hypermethylated
+sum(genes1DMLAnnotations$meth.diff < 0) #Count number of genes with 1 DML hypomethylated
+```
+
+```{r}
+genes1DMLBreakdown <- data.frame("type" = c("1hyper", "0hyper"),
+                                 "DMLcount" = c(sum(genes1DMLAnnotations$meth.diff > 0),
+                                                sum(genes1DMLAnnotations$meth.diff < 0))) #Create dataframe with hyper/hypo breakdown to plot data
+head(genes1DMLBreakdown)
+```
+
+I did some Excel manipulations to count the number of hypermethylated DML in genes with multiple DML.
+
+```{r}
+genes2DMLCounts <- read.csv("2019-10-01-Genes-with-2-DML-withCounts.csv", header = TRUE) #Import file
+genes2DMLCounts$no.hypo <- genes2DMLCounts$DMLCount - genes2DMLCounts$no.hyper #Calculate the number of hypomethylated DML in genes
+head(genes2DMLCounts) #Confirm changes
+```
+
+```{r}
+sum(genes2DMLCounts$no.hyper == 2) #Count # genes with both DML hypermethylated
+sum(genes2DMLCounts$no.hyper == 1) #Count # genes with 1 DML hypermethylated and 1 hypomethylated
+sum(genes2DMLCounts$no.hyper == 0) #Count # genes with both DML hypomethylated
+```
+
+```{r}
+genes2DMLBreakdown <- data.frame("type" = c("2hyper", "1hyper", "0hyper"),
+                                 "DMLcount" = c(sum(genes2DMLCounts$no.hyper == 2),
+                                                sum(genes2DMLCounts$no.hyper == 1),
+                                                sum(genes2DMLCounts$no.hyper == 0))) #Create dataframe with hyper/hypo breakdown to plot data
+head(genes2DMLBreakdown)
+```
+
+```{r}
+genes3DMLCounts <- read.csv("2019-10-01-Genes-with-3-DML-withCounts.csv", header = TRUE) #Import file
+genes3DMLCounts$no.hypo <- genes3DMLCounts$DMLCount - genes3DMLCounts$no.hyper #Calculate the number of hypomethylated DML in genes
+head(genes3DMLCounts) #Confirm changes
+```
+
+```{r}
+sum(genes3DMLCounts$no.hyper == 3) #Count # genes with all DML hypermethylated
+sum(genes3DMLCounts$no.hyper == 2) #Count # genes with 2 DML hypermethylated and 1 hypomethylated
+sum(genes3DMLCounts$no.hyper == 1) #Count # genes with 1 DML hypermethylated and 1 hypomethylated
+sum(genes3DMLCounts$no.hyper == 0) #Count # genes with all DML hypomethylated
+```
+
+```{r}
+genes3DMLBreakdown <- data.frame("type" = c("3hyper", "2hyper", "1hyper", "0hyper"),
+                                 "DMLcount" = c(sum(genes3DMLCounts$no.hyper == 3),
+                                                sum(genes3DMLCounts$no.hyper == 2),
+                                                sum(genes3DMLCounts$no.hyper == 1),
+                                                sum(genes3DMLCounts$no.hyper == 0))) #Create dataframe with hyper/hypo breakdown to plot data
+head(genes3DMLBreakdown)
+```
+
+```{r}
+genes4DMLCounts <- read.csv("2019-10-01-Genes-with-4-DML-withCounts.csv", header = TRUE) #Import file
+genes4DMLCounts$no.hypo <- genes4DMLCounts$DMLCount - genes4DMLCounts$no.hyper #Calculate the number of hypomethylated DML in genes
+head(genes4DMLCounts) #Confirm changes
+```
+
+```{r}
+sum(genes4DMLCounts$no.hyper == 4) #Count # genes with all DML hypermethylated
+sum(genes4DMLCounts$no.hyper == 3) #Count # genes with 3 DML hypermethylated and 1 hypomethylated
+sum(genes4DMLCounts$no.hyper == 2) #Count # genes with 2 DML hypermethylated and 2 hypomethylated
+sum(genes4DMLCounts$no.hyper == 1) #Count # genes with 1 DML hypermethylated and 3 hypomethylated
+sum(genes4DMLCounts$no.hyper == 0) #Count # genes with all DML hypomethylated
+```
+
+```{r}
+genes4DMLBreakdown <- data.frame("type" = c("4hyper", "3hyper", "2hyper", "1hyper", "0hyper"),
+                                 "DMLcount" = c(sum(genes4DMLCounts$no.hyper == 4), 
+                                                sum(genes4DMLCounts$no.hyper == 3),
+                                                sum(genes4DMLCounts$no.hyper == 2),
+                                                sum(genes4DMLCounts$no.hyper == 1),
+                                                sum(genes4DMLCounts$no.hyper == 0))) #Create dataframe with hyper/hypo breakdown to plot data
+head(genes4DMLBreakdown)
+```
+
+```{r}
+genes5DMLCounts <- read.csv("2019-10-01-Genes-with-5-DML-withCounts.csv", header = TRUE) #Import file
+genes5DMLCounts$no.hypo <- genes5DMLCounts$DMLCount - genes5DMLCounts$no.hyper #Calculate the number of hypomethylated DML in genes
+head(genes5DMLCounts) #Confirm changes
+```
+
+```{r}
+sum(genes5DMLCounts$no.hyper == 5) #Count # genes with all DML hypermethylated
+sum(genes5DMLCounts$no.hyper == 4) #Count # genes with 4 DML hypermethylated and 1 hypomethylated
+sum(genes5DMLCounts$no.hyper == 3) #Count # genes with 3 DML hypermethylated and 2 hypomethylated
+sum(genes5DMLCounts$no.hyper == 2) #Count # genes with 2 DML hypermethylated and 3 hypomethylated
+sum(genes5DMLCounts$no.hyper == 1) #Count # genes with 1 DML hypermethylated and 4 hypomethylated
+sum(genes5DMLCounts$no.hyper == 0) #Count # genes with all DML hypomethylated
+```
+
+#### Create individual figures
+
+I'm going to create a multipanel plot with a breakdown of the number hyper- and hypomethylated in genes. I will start by creating each figure separately.
+
+
+```{r}
+#DML/gene
+barplot(numberDMLinGenes$geneCount,
+        axes = FALSE,
+        names.arg = numberDMLinGenes$DMLCount,
+        ylim = c(0, 450)) #Create base plot
+
+axis(side = 2, las = 1, at = c(0, 450), col = "grey80") #Put the axis labels only at 0 and 450.
+mtext(side = 2, "Number of Genes with DML", line = 3) #Add y-axis label
+mtext(side = 1, "Number of DML", line = 3) #Add x-axis label
+```
+
+```{r}
+#Hyper/hypo breakdown for genes with 1 DML
+barplot(genes1DMLBreakdown$DMLcount,
+        axes = FALSE,
+        names.arg = c("1,0", "0,1"),
+        ylim = c(0, 250),
+        col = c("grey20", "grey100")) #Create base plot
+
+axis(side = 2, las = 1, at = c(0, 250), col = "grey80") #Put the axis labels only at 0 and 250.
+mtext(side = 2, "Number of Genes with DML", line = 3) #Add y-axis label
+mtext(side = 1, "Number of DML (Hypermethylated, Hypomethylated)", line = 3) #Add x-axis label
+```
+
+```{r}
+#Hyper/hypo breakdown for genes with 2 DML
+barplot(genes2DMLBreakdown$DMLcount,
+        axes = FALSE,
+        names.arg = c("2,0", "1,1", "0,2"),
+        ylim = c(0, 20),
+        col = c("grey20", "grey60", "grey100")) #Create base plot
+
+axis(side = 2, las = 1, at = c(0, 20), col = "grey80") #Put the axis labels only at 0 and 20.
+mtext(side = 2, "Number of Genes with DML", line = 3) #Add y-axis label
+mtext(side = 1, "Number of DML (Hypermethylated, Hypomethylated)", line = 3) #Add x-axis label
+```
+
+```{r}
+#Hyper/hypo breakdown for genes with 3 DML
+barplot(genes3DMLBreakdown$DMLcount,
+        axes = FALSE,
+        names.arg = c("3,0", "2,1", "1,2", "0,3"),
+        ylim = c(0, 5),
+        col = c("grey20", "grey40", "grey60", "grey100")) #Create base plot
+
+axis(side = 2, las = 1, at = c(0, 5), col = "grey80") #Put the axis labels only at 0 and the maximum value specified by yPrettyTicks. Tick marks are at 0 and 5.
+mtext(side = 2, "Number of Genes with DML", line = 3) #Add y-axis label
+mtext(side = 1, "Number of DML (Hypermethylated, Hypomethylated)", line = 3) #Add x-axis label
+```
+
+```{r}
+#Hyper/hypo breakdown for genes with 4 DML
+barplot(genes4DMLBreakdown$DMLcount,
+        axes = FALSE,
+        names.arg = c("4,0", "3,1", "2,2", "1,3", "0,4"),
+        ylim = c(0, 3),
+        col = c("grey20", "grey40", "grey60", "grey80", "grey100")) #Create base plot
+
+axis(side = 2, las = 1, at = c(0, 3), col = "grey80") #Put the axis labels only at 0 and the maximum value specified by yPrettyTicks. Tick marks are at 0 and 3.
+mtext(side = 2, "Number of Genes with DML", line = 3) #Add y-axis label
+mtext(side = 1, "Number of DML (Hypermethylated, Hypomethylated)", line = 3) #Add x-axis label
+```
+
+#### Create multipanel figure
+
+I'm going to combine the breakdowns with the number of DML in each chromosome.
+
+##### Define layout
+
+```{r}
+#pdf("2019-10-03-DML-Distribution-in-Chr-Genes.pdf", width = 11, height = 8.5)
+
+plotMatrix <- matrix(c(1,1,0,3,4,
+                       2,2,0,5,6),
+                     nrow = 2, ncol = 5, byrow = TRUE) #Create a matrix with plot location information. Fill matrix by row.
+par(mar = c(0, 0, 6, 2.5), oma = c(6, 10, 0, 0)) #Specify inner and outer margins
+layout(mat = plotMatrix, width = c(2, 2, 0.7, 1, 1)) #Create a layout based on plotMatrix. The first and second plots (first column) should be wider.
+#layout.show(n = 6) #Confirm layout looks good
+
+#Chromosome distribution
+DMLbarplot <- barplot(as.matrix(t(DMLchrCounts$DMLCount)),
+                      axes = FALSE, 
+                      names.arg = DMLchrCounts$chr,
+                      cex.names = 1.5,
+                      xlim = c(0.7,11.5),
+                      ylim = c(0,150),
+                      col = "grey80") #Create a barplot and save as a new object. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis. The object contains x coordinates for bars, so xlim is set at 12 to compensate for maximum value of 11.5
+mtext(side = 1, "Chromosome", line = 3, cex = 1.3) #Add x-axis label
+axis(side = 2, line = 1.5, at = seq(0, 150, by = 50), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis for DML counts
+mtext(side = 2, "Number of DML", line = 5, cex = 1.3) #Add y-axis label for DML counts
+mtext(side = 3, line = -1, at = c(0.5, 130), text = "a") #Add figure label
+
+#Add gene number infomration
+par(new = TRUE) #Create a new plot
+plot(x = DMLbarplot,
+     y = DMLchrCounts$geneCount,
+     type = "b",
+     axes = FALSE, xlab = "", ylab = "", xaxs = "i", yaxs = "i",
+     pch = 16, col = "grey20",
+     xlim = c(0,12), ylim = c(0,6500)) #Plot points and lines (type = "b") for gene count by chromosome. Use the coordinates from DMLbarplot (x = DMLbarplot) and set xlim = (0,12) so plots are lined up. Use axes = FALSE to remove both axes. Remove x and y lables (xlab = ""; ylab = ""). Set ylim = (0,6500) to account for max y-values. Use xaxs and yxaxs to remove space between axes.
+axis(side = 4, line = 1.5, at = seq(0, 6500, by = 500), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis for gene sequence counts
+mtext(side = 4, "Number of Genes", line = 7, cex = 1.3) #Add y-axis label for gene sequence counts
+
+#DML/gene distribution
+barplot(numberDMLinGenes$geneCount,
+        axes = FALSE,
+        names.arg = numberDMLinGenes$DMLCount,
+        ylim = c(0, 450)) #Create base plot
+axis(side = 2, las = 1, at = c(0, 450), col = "grey80") #Put the axis labels only at 0 and 450.
+mtext(side = 2, "Number of Genes with DML", line = 3, cex = 1.3) #Add y-axis label
+mtext(side = 1, "Number of DML", line = 3, cex = 1.3) #Add x-axis label
+mtext(side = 3, line = -1, at = c(0.15, 440), text = "b") #Add figure label
+
+#Hyper/hypo breakdown for genes with 1 DML
+barplot(genes1DMLBreakdown$DMLcount,
+        axes = FALSE,
+        names.arg = c("1,0", "0,1"),
+        ylim = c(0, 250),
+        col = c("grey20", "grey100")) #Create base plot
+axis(side = 2, las = 1, at = c(0, 250), col = "grey80") #Put the axis labels only at 0 and 250.
+mtext(side = 3, line = -1, at = c(0.4, 240), text = "c") #Add figure label
+
+#Hyper/hypo breakdown for genes with 2 DML
+barplot(genes2DMLBreakdown$DMLcount,
+        axes = FALSE,
+        names.arg = c("2,0", "", "0,2"),
+        ylim = c(0, 20),
+        col = c("grey20", "grey60", "grey100")) #Create base plot
+axis(side = 2, las = 1, at = c(0, 20), col = "grey80") #Put the axis labels only at 0 and 20.
+mtext(side = 3, line = -1, at = c(0.5, 24.5), text = "d") #Add figure label
+
+#Hyper/hypo breakdown for genes with 3 DML
+barplot(genes3DMLBreakdown$DMLcount,
+        axes = FALSE,
+        names.arg = c("3,0", "", "", "0,3"),
+        ylim = c(0, 5),
+        col = c("grey20", "grey40", "grey60", "grey100")) #Create base plot
+axis(side = 2, las = 1, at = c(0, 5), col = "grey80") #Put the axis labels only at 0 and the maximum value specified by yPrettyTicks. Tick marks are at 0 and 5.
+mtext(side = 2, "Number of Genes", line = 2, cex = 1.3) #Add y-axis label
+mtext(side = 1, "                                                                                                         Hyper, Hypo DML", line = 3, cex = 1.3, outer = TRUE) #Add x-axis label
+mtext(side = 3, line = -1, at = c(0.7, 240), text = "e") #Add figure label
+
+#Hyper/hypo breakdown for genes with 4 DML
+barplot(genes4DMLBreakdown$DMLcount,
+        axes = FALSE,
+        names.arg = c("4,0", "", "", "", "0,4"),
+        ylim = c(0, 3),
+        col = c("grey20", "grey40", "grey60", "grey80", "grey100")) #Create base plot
+axis(side = 2, las = 1, at = c(0, 3), col = "grey80") #Put the axis labels only at 0 and the maximum value specified by yPrettyTicks. Tick marks are at 0 and 3.
+mtext(side = 3, line = -1, at = c(0.75, 240), text = "f") #Add figure label
+
+#dev.off()
 ```
 
 ### Hypermethylated DML-gene overlaps
