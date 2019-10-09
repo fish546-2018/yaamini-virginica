@@ -408,10 +408,10 @@ write.csv(DMLGeneAnnotation, "2019-06-20-DML-Gene-Annotation.csv") #Save file
 
 ### Characterize DML distribution in genes
 
-#### Count the number of DML per gene
+##### Count the number of DML per gene
 
 ```{r}
-DMLGeneAnnotationNomRNA <- unique(DMLGeneAnnotation[,-c(8:11,13:18, 20:23)]) #Remove mRNA information from annotation to quantify #DML/gene (and not by mRNA). Also eliminate Uniprot columns. Use unique to remove any lines that are merging artifacts
+DMLGeneAnnotationNomRNA <- unique(DMLGeneAnnotation[,-c(8:9, 13:18, 20:23)]) #Remove mRNA information from annotation to quantify #DML/gene (and not by mRNA). Also eliminate Uniprot columns. Use unique to remove any lines that are merging artifacts
 head(DMLGeneAnnotationNomRNA) #Confirm column removal
 ```
 
@@ -592,7 +592,7 @@ sum(genes5DMLCounts$no.hyper == 1) #Count # genes with 1 DML hypermethylated and
 sum(genes5DMLCounts$no.hyper == 0) #Count # genes with all DML hypomethylated
 ```
 
-#### Create individual figures
+##### Create individual figures
 
 I'm going to create a multipanel plot with a breakdown of the number hyper- and hypomethylated in genes. I will start by creating each figure separately.
 
@@ -664,8 +664,6 @@ mtext(side = 1, "Number of DML (Hypermethylated, Hypomethylated)", line = 3) #Ad
 #### Create multipanel figure
 
 I'm going to combine the breakdowns with the number of DML in each chromosome.
-
-##### Define layout
 
 ```{r}
 #pdf("2019-10-03-DML-Distribution-in-Chr-Genes.pdf", width = 11, height = 8.5)
@@ -751,6 +749,99 @@ mtext(side = 3, line = -1, at = c(0.75, 240), text = "f") #Add figure label
 
 #dev.off()
 ```
+
+### Scaled DML distribution
+
+Scaling each gene from 0% to 100%, I want to see where DML occurs. This is useful to see if methylation is occuring in any consistent location for each gene. 
+
+```{r}
+head(DMLGeneAnnotationNomRNA)
+```
+
+```{r}
+DMLGeneAnnotationNomRNA$geneLength <- DMLGeneAnnotationNomRNA$gene.end - DMLGeneAnnotationNomRNA$gene.start #Calculate gene length
+DMLGeneAnnotationNomRNA$absPosition <- DMLGeneAnnotationNomRNA$start - DMLGeneAnnotationNomRNA$gene.start #Calculate the absolute position of the DML in the gene
+DMLGeneAnnotationNomRNA$scaledPosition <- DMLGeneAnnotationNomRNA$absPosition / DMLGeneAnnotationNomRNA$geneLength #Calculate the scaled position of the DML in the gene
+head(DMLGeneAnnotationNomRNA) #Confirm calculations
+```
+
+```{r}
+DMLGenePositionsHyper <- subset(DMLGeneAnnotationNomRNA, subset = DMLGeneAnnotationNomRNA$meth.diff > 0) #Subset hypermethylated DML
+DMLGenePositionsHypo <- subset(DMLGeneAnnotationNomRNA, subset = DMLGeneAnnotationNomRNA$meth.diff < 0) #Subset hypomethylated DML
+head(DMLGenePositionsHyper) #Confirm subset
+head(DMLGenePositionsHypo) #Confirm subset
+```
+
+#### Create individual figures
+
+I'm going to make back-to-back histograms to easily compare distributions of hyper- and hypomethtylated DML along a gene. First I'll create individual plots, then I'll add them to the same coordinate plane.
+
+```{r}
+#Hypermethylated DML
+hist(DMLGenePositionsHyper$scaledPosition, 
+     breaks = 100,
+     axes = FALSE,
+     xlab = "", ylab = "", main = "",
+     col = "grey20",
+     xaxs = "i", yaxs = "i") #Create base plot with no axes or labels. Include breaks at each percent.
+axis(side = 1, at = seq(from = 0, to = 1, by = 0.1), col = "grey80") #Add x-axis
+mtext(side = 1, "Scaled Position on Gene", line = 3) #Add x-axis label
+axis(side = 2, at = seq(from = 0, to = 8, by = 1), col = "grey80", las = 2) #Add y-axis
+mtext(side = 2, "Number of Hypermethylated DML", line = 2) #Add y-axis label
+```
+
+```{r}
+#Hypomethylated DML
+hist(DMLGenePositionsHypo$scaledPosition, 
+     breaks = 100,
+     axes = FALSE,
+     xlab = "", ylab = "", main = "",
+     col = "grey100",
+     xaxs = "i", yaxs = "i") #Create base plot with no axes or labels. Include breaks at each percent.
+axis(side = 1, at = seq(from = 0, to = 1, by = 0.1), col = "grey80") #Add x-axis
+mtext(side = 1, "Scaled Position on Gene", line = 3) #Add x-axis label
+axis(side = 2, at = seq(from = 0, to = 7, by = 1), col = "grey80", las = 2) #Add y-axis
+mtext(side = 2, "Number of Hypomethylated DML", line = 2) #Add y-axis label
+```
+
+#### Create back-to-back plot
+
+```{r}
+hyperPlotDML <- hist(DMLGenePositionsHyper$scaledPosition, breaks = 100, plot = FALSE) #Save base hypermethylated plot
+hypoPlotDML <- hist(DMLGenePositionsHypo$scaledPosition, breaks = 100, plot = FALSE) #Save base hypomethylated plot
+```
+
+```{r}
+#Calculate plotting parameters
+hypoPlotDML$counts <- -(hypoPlotDML$counts) #Make counts negative for hypoPlot
+hmaxDML <- max(hyperPlotDML$counts) #Set maximum value as max value of hyperPlot
+hminDML <- min(hypoPlotDML$counts) #Set minimum value as minimum value of hypoPlot
+
+breaksDMLPlot <- c(hyperPlotDML$breaks, hypoPlotDML$breaks) #Set breaks for plots
+xmaxDML <- max(breaksDMLPlot) #Set xmax based on breaks
+xminDML <- min(breaksDMLPlot) #Set xmin based on breaks
+```
+
+```{r}
+#pdf("2019-10-09-Scaled-Gene-DML-Distribution.pdf", height = 8.5, width = 11)
+
+plot(hyperPlotDML, 
+     xlim = c(xminDML, xmaxDML),
+     ylim = c(hminDML, hmaxDML), 
+     axes = FALSE,
+     xlab = "", ylab = "", main = "",
+     col = "grey20") #Create the base plot with just hyperPlot. Set xlim and ylim on parameters calculated above. Remove all axes and axis labels
+lines(hypoPlotDML, col= "grey100") #Add hypoPlot
+axis(side = 1, at = seq(from = 0, to = 1, by = 0.1), col = "grey80", cex = 1.2) #Add x-axis
+mtext(side = 1, "Scaled Position on Gene", line = 3, cex = 1.5) #Add x-axis label
+axis(side = 2, at = seq(from = hminDML, to = hmaxDML, by = 2), labels = c(seq(from = hminDML, to = 0, by = 2)*-1, seq(from = 2, to = hmaxDML, by = 2)), col = "grey80", las = 2, cex = 1.2) #Add y-axis. Add labels from minimum to maximum valules, but 
+mtext(side = 2, "Number of DML", line = 2, cex = 1.5) #Add y-axis label
+
+#dev.off()
+```
+
+
+
 
 ### Hypermethylated DML-gene overlaps
 
@@ -991,6 +1082,10 @@ head(DMLBackgroundmRNAOverlaps) #Confirm merge
 ```{r}
 DMLBackgroundmRNAOverlaps <- DMLBackgroundmRNAOverlaps[,c(3:6, 1:2, 9:11)] #Reorganize columns
 head(DMLBackgroundmRNAOverlaps) #Confirm reorganization
+```
+
+```{r}
+head(blastResults)
 ```
 
 ## Merge with Uniprot codes
