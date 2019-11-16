@@ -296,7 +296,7 @@ head(methylationInformationFilteredCov5Destrand) #Confirm unite
 ```
 
 ```{r}
-clusteringInformationFilteredCov5Destrand <- clusterSamples(methylationInformationFilteredCov5Destrand, dist = "correlation", method = "ward", plot = FALSE) #Save cluster information as a new object
+clusteringInformationFilteredCov5Destrand <- clusterSamples(methylationInformationFilteredCov5Destrand, dist = "correlation", method = "ward.D", plot = TRUE) #Save cluster information as a new object
 ```
 
 ```{r}
