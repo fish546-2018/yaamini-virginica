@@ -13,6 +13,13 @@ In this R Markdown document, I will format files for gene enrichment with [GO-MW
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Install packages
+
+```{r}
+#install.packages("dichromat")
+require(dichromat)
+```
+
 # Obtain session information
 
 ```{r}
@@ -241,6 +248,99 @@ head(parentGOBPCounts) #Confirm counts
 write.csv(parentGOBPCounts, "2019-07-30-allTested-Parent-GOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
+###### Map to GOslim terms
+
+```{r}
+CVGOslim <- read.delim("../2019-08-14-Differentially-Methylated-Genes/Blastquery-GOslim-BP.sorted.unique.noOther", sep = "\t", header = FALSE) #Import GOslim information
+colnames(CVGOslim) <- c("Genbank", "GOslim") #Add column names
+head(CVGOslim) #Confirm import
+```
+
+```{r}
+parentGOBPGOslim <- unique(merge(x = parentGOBP, y = CVGOslim, by = "Genbank", all.x = TRUE)) #Merge GO-MWU with GOslim information, retaining all GO-MWU entries. Remove any merging artifacts
+head(parentGOBPGOslim) #Confirm merge
+length(parentGOBPGOslim$GOslim) #Count number of entries
+```
+
+```{r}
+sum(is.na(parentGOBPGOslim$GOslim)) #Count how many entries do not have GOslim terms. 27/2281 GO-MWU entries do not have GOslim entries.
+```
+
+```{r}
+parentGOBPGOslimCounts <- as.data.frame(table(parentGOBPGOslim$GOslim)) #Count the frequency of each GOslim term
+colnames(parentGOBPGOslimCounts) <- c("CVGOslim", "frequency") #Rename columns
+head(parentGOBPGOslimCounts) #Confirm counts
+```
+
+```{r}
+write.csv(parentGOBPGOslimCounts, "2019-07-30-allTested-CVGOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
+```{r}
+parentGOBPGOslimCounts$percentage <- (parentGOBPGOslimCounts$frequency/sum(parentGOBPGOslimCounts$frequency)*100) #Create a new column with percentages of GOSlim terms instead of raw counts
+head(parentGOBPGOslimCounts) #Confirm column creation
+max(parentGOBPGOslimCounts$percentage)
+```
+
+```{r}
+parentGOBPGOslimCounts <- parentGOBPGOslimCounts[c(4, 1, 5, 11, 13,
+                                                         2, 6, 3,
+                                                         12,
+                                                         7, 10, 9, 8),] #Reorganize rows based on broader functions. Rows are general activity, development, stress response, and metabolic processes
+head(parentGOBPGOslimCounts) #Confirm organization
+```
+
+```{r}
+parentGOBPGOslimCounts$GOSlim <- c("Cell-Cell Signaling", "Cell Adhesion", "Death", "Signal Transduction", "Transport",
+                                   "Cell Cycle and Proliferation", "Developmental Processes", "Cell Organization and Biogenesis",
+                                   "Stress Response",
+                                   "DNA Metabolism", "RNA Metabolism", "Protein Metabolism", "Other Metabolic Processes") #Capitalize labels
+head(parentGOBPGOslimCounts) #Confirm capitalization
+```
+
+####### Create figure
+
+```{r}
+RColorBrewer::display.brewer.all() #Show all RColorBrewer palettes. I will choose greens.
+plotColors <- rev(RColorBrewer::brewer.pal(5, "GnBu")) #Create a color palette for the barplots. Use 5 green-blue shades from RColorBrewer. Reverse theorder so the darkest shade is used first.
+barplot(parentGOBPGOslimCounts$percentage,
+        col = plotColors) #See what plot looks like with new scheme
+barplot(parentGOBPGOslimCounts$percentage,
+        col = dichromat(plotColors)) #Check that the plot colors will be easy to interpret for those with color blindess
+```
+
+```{r}
+#pdf("2019-11-19-BP-GOSlim-allTested-Gene-Overlaps.pdf", width = 11, height = 8.5) #Save as a pdf
+
+par(mar = c(5, 20, 1, 1)) #Change figure boundaries
+
+barsGOSlim <- barplot((parentGOBPGOslimCounts$percentage),
+                      horiz = TRUE,
+                      axes = FALSE,
+                      xlim = c(0,18),
+                      col = c(rep(plotColors[2], times = 5),
+                              rep(plotColors[4], times = 3),
+                              rep(plotColors[5], times = 1),
+                              rep(plotColors[1], times = 4))) #Create a barplot that is horizontal (horiz = TRUE). Use axes = FALSE to remove all axes. Set xlim based on maximum percentage value. Colors correspond to broader GOSlim groupings. Save plot as a new object.
+
+axis(side = 2, at = barsGOSlim, labels = parentGOBPGOslimCounts$GOSlim, tick = FALSE, las = 2, col = "grey80", cex.axis = 1.5) #Add y-axis with GOSlim terms from BPGOSlimCounts. Place labels at specific barplot values from barsGOSlim. Remove tick marks (tick) and change orientation of labels (las)
+
+axis(side = 1, at = seq(from = 0, to = 18, by = 2), cex = 1.2, col = "grey80") #Add x-axis
+mtext(side = 1, "Percent of Genes", line = 3, cex = 1.5) #Add x-axis label
+
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE) #Create new plot
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n") #Add new plot on top of current plot
+legend("bottomleft",
+       xpd = TRUE,
+       legend = c("General Activity", "Development", "Stress Response", "Metabolic Processes"),
+       pch = 22, 
+        col = "black", 
+        pt.bg = c(plotColors[2], plotColors[4], plotColors[5], plotColors[1]),
+       bty = "n") #Place a legend in the bottom left of the figure with no box
+
+#dev.off()
+```
+
 ##### Differentially methylated loci
 
 GO-MWU takes all loci into account, but there may be some differences in parental GOslim terms if I only look at differentially methylated loci. I will import the DML annotations I made previously and work from there.
@@ -280,29 +380,79 @@ write.csv(parentGOBPDMLCounts, "2019-07-30-condensedDML-Parent-GOSlim-Frequency-
 ###### Map to GOslim terms
 
 ```{r}
-CVGOslim <- read.delim("../2019-08-14-Differentially-Methylated-Genes/Blastquery-GOslim-BP.sorted", sep = "\t", header = FALSE) #Import GOslim information
-colnames(CVGOslim) <- c("Genbank", "GOslim") #Add column names
-head(CVGOslim) #Confirm import
-```
-
-```{r}
 parentGOBPDMLGOslim <- unique(merge(x = parentGOBPDML, y = CVGOslim, by = "Genbank", all.x = TRUE)) #Merge GO-MWU with GOslim information, retaining all GO-MWU entries. Remove any merging artifacts
 head(parentGOBPDMLGOslim) #Confirm merge
+length(parentGOBPDMLGOslim$GOslim) #Count number of entries
 ```
 
 ```{r}
-sum(is.na(parentGOBPDMLGOslim$GOslim)) #Count how many entries do not have GOslim terms. 356/6111 do not have GO-MWU entries.
+sum(is.na(parentGOBPDMLGOslim$GOslim)) #Count how many entries do not have GOslim terms. 425/5283 GO-MWU entries do not have GOslim entries.
 ```
 
 ```{r}
 parentGOBPDMLGOslimCounts <- as.data.frame(table(parentGOBPDMLGOslim$GOslim)) #Count the frequency of each GOslim term
 colnames(parentGOBPDMLGOslimCounts) <- c("CVGOslim", "frequency") #Rename columns
-parentGOBPDMLGOslimCounts <- subset(parentGOBPDMLGOslimCounts, subset = frequency > 0) #Remove residual factors
 head(parentGOBPDMLGOslimCounts) #Confirm counts
 ```
 
 ```{r}
 write.csv(parentGOBPDMLGOslimCounts, "2019-07-30-condensedDML-CVGOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
+```{r}
+parentGOBPDMLGOslimCounts$percentage <- (parentGOBPDMLGOslimCounts$frequency/sum(parentGOBPDMLGOslimCounts$frequency)*100) #Create a new column with percentages of GOSlim terms instead of raw counts
+head(parentGOBPDMLGOslimCounts) #Confirm column creation
+max(parentGOBPDMLGOslimCounts$percentage)
+```
+
+```{r}
+parentGOBPDMLGOslimCounts <- parentGOBPDMLGOslimCounts[c(4, 1, 5, 11, 13,
+                                                         2, 6, 3,
+                                                         12,
+                                                         7, 10, 9, 8),] #Reorganize rows based on broader functions. Rows are general activity, development, stress response, and metabolic processes
+head(parentGOBPDMLGOslimCounts) #Confirm organization
+```
+
+```{r}
+parentGOBPDMLGOslimCounts$GOSlim <- c("Cell-Cell Signaling", "Cell Adhesion", "Death", "Signal Transduction", "Transport",
+                                      "Cell Cycle and Proliferation", "Developmental Processes", "Cell Organization and Biogenesis",
+                                      "Stress Response",
+                                      "DNA Metabolism", "RNA Metabolism", "Protein Metabolism", "Other Metabolic Processes") #Capitalize labels
+head(parentGOBPDMLGOslimCounts) #Confirm capitalization
+```
+
+####### Create figure
+
+```{r}
+#pdf("2019-11-19-BP-GOSlim-DML-Gene-Overlaps.pdf", width = 11, height = 8.5) #Save as a pdf
+
+par(mar = c(5, 20, 1, 1)) #Change figure boundaries
+
+barsGOSlimDML <- barplot(parentGOBPDMLGOslimCounts$percentage,
+                      horiz = TRUE,
+                      axes = FALSE,
+                      xlim = c(0,18),
+                      col = c(rep(plotColors[2], times = 5),
+                              rep(plotColors[4], times = 3),
+                              rep(plotColors[5], times = 1),
+                              rep(plotColors[1], times = 4))) #Create a barplot that is horizontal (horiz = TRUE). Use axes = FALSE to remove all axes. Set xlim based on maximum percentage value. Colors correspond to broader GOSlim groupings. Save plot as a new object.
+
+axis(side = 2, at = barsGOSlimDML, labels = parentGOBPDMLGOslimCounts$GOSlim, tick = FALSE, las = 2, col = "grey80", cex.axis = 1.5) #Add y-axis with GOSlim terms from BPGOSlimCounts. Place labels at specific barplot values from barsGOSlim. Remove tick marks (tick) and change orientation of labels (las)
+
+axis(side = 1, at = seq(from = 0, to = 18, by = 2), cex = 1.2, col = "grey80") #Add x-axis
+mtext(side = 1, "Percent of Genes with DML", line = 3, cex = 1.5) #Add x-axis label
+
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE) #Create new plot
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n") #Add new plot on top of current plot
+legend("bottomleft",
+       xpd = TRUE,
+       legend = c("General Activity", "Development", "Stress Response", "Metabolic Processes"),
+       pch = 22, 
+        col = "black", 
+        pt.bg = c(plotColors[2], plotColors[4], plotColors[5], plotColors[1]),
+       bty = "n") #Place a legend in the bottom left of the figure with no box
+
+#dev.off()
 ```
 
 ###### Hypermethylated loci
@@ -400,6 +550,43 @@ head(parentGOBPCondensedHypoGOslimCounts) #Confirm counts
 ```{r}
 write.csv(parentGOBPCondensedHypoGOslimCounts, "2019-07-30-condensedDMLHypo-CVGOSlim-Frequency-BP.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
+
+##### Figure to compare all tested and DML distributions
+
+```{r}
+#pdf("2019-11-19-BP-GOSlim-allTested-Versus-DML.pdf", width = 11, height = 8.5) #Save as a pdf
+
+par(mfrow = c(1, 2), oma = c(5, 20, 0, 3), mar = c(0, 0, 0, 0)) #Set up parameters for multipanel plot
+
+barsGOSlim <- barplot(-1*(parentGOBPGOslimCounts$percentage),
+                      horiz = TRUE,
+                      axes = FALSE,
+                      xlim = c(-18,0),
+                      col = c(rep(plotColors[2], times = 5),
+                              rep(plotColors[4], times = 3),
+                              rep(plotColors[5], times = 1),
+                              rep(plotColors[1], times = 4))) #Create a barplot that is horizontal (horiz = TRUE). Use axes = FALSE to remove all axes. Set xlim based on maximum percentage value. Colors correspond to broader GOSlim groupings. Save plot as a new object.
+
+axis(side = 2, at = barsGOSlim, labels = parentGOBPGOslimCounts$GOSlim, tick = FALSE, las = 2, col = "grey80", cex.axis = 1.5) #Add y-axis with GOSlim terms from BPGOSlimCounts. Place labels at specific barplot values from barsGOSlim. Remove tick marks (tick) and change orientation of labels (las)
+
+axis(side = 1, at = seq(from = -18, to = 0, by = 2), labels = c(seq(from = 18, to = 0, by = -2)), cex = 1.2, col = "grey80") #Add x-axis
+mtext(side = 1, "% Genes", line = 3, cex = 1.5) #Add x-axis label
+
+barsGOSlimDML <- barplot(parentGOBPDMLGOslimCounts$percentage,
+                         horiz = TRUE,
+                         axes = FALSE,
+                         xlim = c(0,18),
+                         col = c(rep(plotColors[2], times = 5),
+                                 rep(plotColors[4], times = 3),
+                                 rep(plotColors[5], times = 1),
+                                 rep(plotColors[1], times = 4))) #Create a barplot that is horizontal (horiz = TRUE). Use axes = FALSE to remove all axes. Set xlim based on maximum percentage value. Colors correspond to broader GOSlim groupings. Save plot as a new object.
+
+axis(side = 1, at = seq(from = 0, to = 18, by = 2), cex = 1.2, col = "grey80") #Add x-axis
+mtext(side = 1, "% Genes with DML", line = 3, cex = 1.5) #Add x-axis label
+
+#dev.off()
+```
+
 
 ### Cellular components
 
@@ -700,32 +887,3 @@ gomwuStats(input, goDatabase, goAnnotations, goDivision,
 	clusterCutHeight=0.25) # threshold for merging similar (gene-sharing) terms. See README for details.
 # There are no GO terms pass 10% FDR, which is the same as the signed log p-value method. The outputs may be different, so I have to investigate that.
 ```
-
-# Collecting ReVIGO inputs
-
-Since I have p-values and GOterms for each gene, I can use that information in ReVIGO to generate some plots. I will need to reformat inputs beforehand.
-
-## Multiple p-values per gene
-
-```{r}
-allTestedGOtermsReVIGO <- data.frame("pvalue" = allTestedGOterms$pvalue,
-                                     "GO" = allTestedGOterms$GO) #Save p-values and GOterms separately
-head(allTestedGOtermsReVIGO) #Confirm dataframe creation
-```
-
-```{r}
-write.csv(allTestedGOtermsReVIGO, "2019-07-30-All-Tested-Loci-ReVIGO-Input.csv", quote = FALSE, row.names = FALSE) #Save file. I will use text-to-columns in R to separate GOterms by semicolons and match one GOterm per p-value.
-```
-
-## One p-value per gene
-
-```{r}
-allTestedGOtermsCondensedReVIGO <- data.frame("pvalue" = allTestedGOtermsCondensed$pvalue,
-                                              "GO" = allTestedGOtermsCondensed$GO) #Save p-values and GOterms separately
-head(allTestedGOtermsCondensedReVIGO) #Confirm dataframe creation
-```
-
-```{r}
-write.csv(allTestedGOtermsCondensedReVIGO, "2019-07-30-All-Tested-Loci-Condensed-ReVIGO-Input.csv", quote = FALSE, row.names = FALSE) #Save file. I will use text-to-columns in R to separate GOterms by semicolons and match one GOterm per p-value.
-```
-
