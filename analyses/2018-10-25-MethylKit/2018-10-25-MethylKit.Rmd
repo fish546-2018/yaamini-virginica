@@ -516,10 +516,10 @@ summary(allDataPCA) #Look at summary statistics. The first PC explains 18.1% of 
 ```{r}
 #pdf("2019-11-19-All-Data-PCA.pdf", width = 11, height = 8.5)
 
-par(mar = c(4, 4, 1, 1)) #Specify inner and outer margins
+par(mar = c(5, 5, 1, 1)) #Specify inner and outer margins
 
 fig.allDataPCA <- ordiplot(allDataPCA, choices = c(1, 2), type = "none", display = "sites", cex = 0.5, xlab = "", ylab = "", xaxt = "n", yaxt = "n") #Use ordiplot to create base biplot. Do not add any points
-points(fig.allDataPCA, "sites", col = c(rep(plotColors[2], times = 5), rep(plotColors[4], times = 5)), pch = 16, cex = 2) #Add each sample. Darker samples are ambient, lighter samples are elevated pCO2
+points(fig.allDataPCA, "sites", col = c(rep(plotColors[2], times = 5), rep(plotColors[4], times = 5)), pch = c(rep(16, times = 5), rep(17, times = 5)), cex = 3) #Add each sample. Darker samples are ambient, lighter samples are elevated pCO2
 
 #Add multiple white boxes on top of the default black box to manually change the color
 box(col = "white")
@@ -536,17 +536,17 @@ box(col = "white")
 ordiellipse(allDataPCA, plotCustomization$treatment, show.groups = "1", col = plotColors[4]) #Add confidence ellipse around the samples in elevated pCO2
 ordiellipse(allDataPCA, plotCustomization$treatment, show.groups = "0", col = plotColors[2]) #Add confidence ellipse around the samples in ambient pCO2
 
-axis(side =  1, labels = TRUE, col = "grey80", cex.axis = 0.75) #Add x-axis
-mtext(side = 1, text = "PC 1 (18.1%)", line = 2.5) #Add x-axis label
+axis(side =  1, labels = TRUE, col = "grey80", cex.axis = 1.7) #Add x-axis
+mtext(side = 1, text = "PC 1 (18.1%)", line = 3, cex = 1.5) #Add x-axis label
 
-axis(side =  2, labels = TRUE, col = "grey80", cex.axis = 0.75) #Add y-axis
-mtext(side = 2, text = "PC 2 (11.7%)", line = 2.5) #Add y-axis label
+axis(side =  2, labels = TRUE, col = "grey80", cex.axis = 1.7) #Add y-axis
+mtext(side = 2, text = "PC 2 (11.7%)", line = 3, cex = 1.5) #Add y-axis label
 
-legend("topright", 
-       pch = 16, 
+legend("topleft", 
+       pch = c(16, 17), 
        legend = c("Ambient", "Elevated"), 
        col = c(plotColors[2], plotColors[4]), 
-       cex = 1, bty = "n") #Add a legend with information about ambient and elevated samples
+       cex = 1.7, bty = "n") #Add a legend with information about ambient and elevated samples
 
 #dev.off()
 ```
@@ -556,24 +556,61 @@ legend("topright",
 The first thing I need to do is subset the data so it only includes DML. Then, I can use similar code to what I used above to create PCA plots.
 
 ```{r}
-DMLMatrix <- methylationInformationFilteredCov5Destrand[differentialMethylationStatsFilteredCov5Destrand$start == methylationInformationFilteredCov5Destrand$start,]
-head(DMLMatrix)
-length(DMLMatrix$chr)
+DMLPositions <- rep(0, times = length(diffMethStats50FilteredCov5Destrand$chr)) #Create an empty vector with 598 places to store row numbers
+for (i in 1:length(DMLPositions)) {
+  DMLPositions[i] <- which(getData(diffMethStats50FilteredCov5Destrand)$start[i] == getData(methylationInformationFilteredCov5Destrand)$start)
+} #For each DML, save the row number where that DML is found in methylationInformationFilteredCov5Destrand
+tail(DMLPositions) #Confirm vector was created
 ```
 
-
 ```{r}
-DMLMatrix <- unique(merge(x = getData(differentialMethylationStatsFilteredCov5Destrand), y = getData(methylationInformationFilteredCov5Destrand), by = c("chr", "start", "end"))) #Merge DML list and all methylation information by DML chr, start, and end position. Use getData() to extract data from methylBase objects
-DMLMatrix <- DMLMatrix[,-c(5:9)] #Remove duplicate columns
-head(DMLMatrix) #Confirm merge
-length(DMLMatrix$chr)
+DMLMatrix <- methylationInformationFilteredCov5Destrand[DMLPositions,] #Subset methylationInformationFilteredCov5Destrand to only include DML and save as a new methylBase object
+sum((DMLMatrix$start) == (diffMethStats50FilteredCov5Destrand$start)) == length(diffMethStats50FilteredCov5Destrand$start) #Confirm that start columns are identical. If they are identical, the sum of all TRUE statements should equal the length of the original methylBase object
+tail(DMLMatrix) #Confirm methylBase object creation
 ```
 
 ```{r}
 DMLDataPCA <- PCASamples(DMLMatrix, obj.return = TRUE) #Run a PCA analysis on percent methylation for all samples. methylKit uses prcomp to create the PCA matrix
-summary(DMLDataPCA) #Look at summary statistics. The first PC explains 18.1% of variation, the second PC explains 11.7% of variation
+summary(DMLDataPCA) #Look at summary statistics. The first PC explains 47.6% of variation, the second PC explains 9.5% of variation
 ```
 
+```{r}
+#pdf("2019-11-19-DML-Only-PCA.pdf", width = 11, height = 8.5)
+
+par(mar = c(5, 5, 1, 1)) #Specify inner and outer margins
+
+fig.DMLDataPCA <- ordiplot(DMLDataPCA, choices = c(1, 2), type = "none", display = "sites", cex = 0.5, xlab = "", ylab = "", xaxt = "n", yaxt = "n") #Use ordiplot to create base biplot. Do not add any points
+points(fig.DMLDataPCA, "sites", col = c(rep(plotColors[2], times = 5), rep(plotColors[4], times = 5)), pch = c(rep(16, times = 5), rep(17, times = 5)), cex = 3) #Add each sample. Darker samples are ambient, lighter samples are elevated pCO2
+
+#Add multiple white boxes on top of the default black box to manually change the color
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+
+ordiellipse(DMLDataPCA, plotCustomization$treatment, show.groups = "1", col = plotColors[4]) #Add confidence ellipse around the samples in elevated pCO2
+ordiellipse(DMLDataPCA, plotCustomization$treatment, show.groups = "0", col = plotColors[2]) #Add confidence ellipse around the samples in ambient pCO2
+
+axis(side =  1, labels = TRUE, col = "grey80", cex.axis = 1.7) #Add x-axis
+mtext(side = 1, text = "PC 1 (47.6%)", line = 3, cex = 1.5) #Add x-axis label
+
+axis(side =  2, labels = TRUE, col = "grey80", cex.axis = 1.7) #Add y-axis
+mtext(side = 2, text = "PC 2 (9.5%)", line = 3, cex = 1.5) #Add y-axis label
+
+legend("topright", 
+       pch = c(16, 17), 
+       legend = c("Ambient", "Elevated"), 
+       col = c(plotColors[2], plotColors[4]), 
+       cex = 1.7, bty = "n") #Add a legend with information about ambient and elevated samples
+
+#dev.off()
+```
 
 
 # Differentially methylated regions
