@@ -16,6 +16,11 @@ knitr::opts_chunk$set(echo = TRUE)
 # Install packages
 
 ```{r}
+install.packages("vegan")
+require(vegan)
+```
+
+```{r}
 install.packages("devtools") #Install the devtools package
 require(devtools) #Load devtools
 ```
@@ -488,6 +493,88 @@ mtext(side = 4, "Number of Genes", line = 6, cex = 1.5) #Add y-axis label for ge
 
 #dev.off() #Turn off plotting device
 ```
+
+#### Principal Component Analyses
+
+`methylKit` creates PCA biplots, but I want to dig further into the analysis and create custom biplots.
+
+###### Plot customization
+
+```{r}
+plotCustomization <- data.frame(sample = 1:10,
+                                treatmentSpecification) #Create dataframe with sample treatment information
+head(plotCustomization) #Confirm dataframe creation
+```
+
+###### All methylation data
+
+```{r}
+allDataPCA <- PCASamples(methylationInformationFilteredCov5Destrand, obj.return = TRUE) #Run a PCA analysis on percent methylation for all samples. methylKit uses prcomp to create the PCA matrix
+summary(allDataPCA) #Look at summary statistics. The first PC explains 18.1% of variation, the second PC explains 11.7% of variation
+```
+
+```{r}
+#pdf("2019-11-19-All-Data-PCA.pdf", width = 11, height = 8.5)
+
+par(mar = c(4, 4, 1, 1)) #Specify inner and outer margins
+
+fig.allDataPCA <- ordiplot(allDataPCA, choices = c(1, 2), type = "none", display = "sites", cex = 0.5, xlab = "", ylab = "", xaxt = "n", yaxt = "n") #Use ordiplot to create base biplot. Do not add any points
+points(fig.allDataPCA, "sites", col = c(rep(plotColors[2], times = 5), rep(plotColors[4], times = 5)), pch = 16, cex = 2) #Add each sample. Darker samples are ambient, lighter samples are elevated pCO2
+
+#Add multiple white boxes on top of the default black box to manually change the color
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+
+ordiellipse(allDataPCA, plotCustomization$treatment, show.groups = "1", col = plotColors[4]) #Add confidence ellipse around the samples in elevated pCO2
+ordiellipse(allDataPCA, plotCustomization$treatment, show.groups = "0", col = plotColors[2]) #Add confidence ellipse around the samples in ambient pCO2
+
+axis(side =  1, labels = TRUE, col = "grey80", cex.axis = 0.75) #Add x-axis
+mtext(side = 1, text = "PC 1 (18.1%)", line = 2.5) #Add x-axis label
+
+axis(side =  2, labels = TRUE, col = "grey80", cex.axis = 0.75) #Add y-axis
+mtext(side = 2, text = "PC 2 (11.7%)", line = 2.5) #Add y-axis label
+
+legend("topright", 
+       pch = 16, 
+       legend = c("Ambient", "Elevated"), 
+       col = c(plotColors[2], plotColors[4]), 
+       cex = 1, bty = "n") #Add a legend with information about ambient and elevated samples
+
+#dev.off()
+```
+
+###### DML
+
+The first thing I need to do is subset the data so it only includes DML. Then, I can use similar code to what I used above to create PCA plots.
+
+```{r}
+DMLMatrix <- methylationInformationFilteredCov5Destrand[differentialMethylationStatsFilteredCov5Destrand$start == methylationInformationFilteredCov5Destrand$start,]
+head(DMLMatrix)
+length(DMLMatrix$chr)
+```
+
+
+```{r}
+DMLMatrix <- unique(merge(x = getData(differentialMethylationStatsFilteredCov5Destrand), y = getData(methylationInformationFilteredCov5Destrand), by = c("chr", "start", "end"))) #Merge DML list and all methylation information by DML chr, start, and end position. Use getData() to extract data from methylBase objects
+DMLMatrix <- DMLMatrix[,-c(5:9)] #Remove duplicate columns
+head(DMLMatrix) #Confirm merge
+length(DMLMatrix$chr)
+```
+
+```{r}
+DMLDataPCA <- PCASamples(DMLMatrix, obj.return = TRUE) #Run a PCA analysis on percent methylation for all samples. methylKit uses prcomp to create the PCA matrix
+summary(DMLDataPCA) #Look at summary statistics. The first PC explains 18.1% of variation, the second PC explains 11.7% of variation
+```
+
+
 
 # Differentially methylated regions
 
