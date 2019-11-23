@@ -504,9 +504,7 @@ mtext(side = 4, "Number of Genes", line = 6, cex = 1.5) #Add y-axis label for ge
 #dev.off() #Turn off plotting device
 ```
 
-#### Principal Component Analyses
-
-`methylKit` creates PCA biplots, but I want to dig further into the analysis and create custom biplots.
+#### Preliminary Analyses
 
 ###### Plot customization
 
@@ -516,7 +514,11 @@ plotCustomization <- data.frame(sample = 1:10,
 head(plotCustomization) #Confirm dataframe creation
 ```
 
-###### All methylation data
+###### Principal Component Analyses
+
+`methylKit` creates PCA biplots, but I want to dig further into the analysis and create custom biplots.
+
+####### All methylation data
 
 ```{r}
 allDataPCA <- PCASamples(methylationInformationFilteredCov5Destrand, obj.return = TRUE) #Run a PCA analysis on percent methylation for all samples. methylKit uses prcomp to create the PCA matrix
@@ -554,14 +556,14 @@ mtext(side = 2, text = "PC 2 (11.7%)", line = 3, cex = 1.5) #Add y-axis label
 
 legend("topleft", 
        pch = c(16, 17), 
-       legend = c("Ambient", "Elevated"), 
+       legend = c("Control", "Elevated"), 
        col = c(plotColors[2], plotColors[4]), 
        cex = 1.7, bty = "n") #Add a legend with information about ambient and elevated samples
 
 #dev.off()
 ```
 
-###### DML
+####### DML
 
 The first thing I need to do is subset the data so it only includes DML. Then, I can use similar code to what I used above to create PCA plots.
 
@@ -615,14 +617,14 @@ mtext(side = 2, text = "PC 2 (9.5%)", line = 3, cex = 1.5) #Add y-axis label
 
 legend("topright", 
        pch = c(16, 17), 
-       legend = c("Ambient", "Elevated"), 
+       legend = c("Control", "Elevated"), 
        col = c(plotColors[2], plotColors[4]), 
        cex = 1.7, bty = "n") #Add a legend with information about ambient and elevated samples
 
 #dev.off()
 ```
 
-###### Multipanel plot
+####### Multipanel plot
 
 ```{r}
 #pdf("2019-11-19-PCA-Multpanel.pdf", height = 8.5, width = 11) #Save plot
@@ -687,7 +689,7 @@ mtext(side = 3, line = -5, adj = c(-100, 0), text = "    b. DML", cex = 1.5) #Ad
 
 legend(x = 0, y = -22, 
        pch = c(16, 17), 
-       legend = c("Ambient", "Elevated"), 
+       legend = c("Control", "Elevated"), 
        col = c(plotColors[2], plotColors[4]),
        y.intersp = 1, x.intersp = 1,
        cex = 1.7, bty = "n") #Add a legend with information about ambient and elevated samples
@@ -695,7 +697,7 @@ legend(x = 0, y = -22,
 #dev.off()
 ```
 
-#### DML Heatmap
+##### Heatmap
 
 ```{r}
 percMethDML <- percMethylation(DMLMatrix, rowids = TRUE) #Get percent methylation for all samples at DML. Include row IDs (chr, start, end) information
@@ -717,7 +719,7 @@ pheatmap(percMethDML, color = rev(plotColors),
 I also want to try using a different heatmap package, `heatmap.2` from `gplots`. `heatmap.2` allows you to add a density plot with the legend, which could be interesting information to include.
 
 ```{r}
-pdf("2019-11-19-DML-Only-Heatmap.pdf", height = 8.5, width = 11)
+#pdf("2019-11-19-DML-Only-Heatmap.pdf", height = 8.5, width = 11)
 
 par(oma = c(0, 1, 0, 0)) #Adjust outer margins
 heatmap.2(percMethDML, col = plotColors, scale = "none", margins = c(1,1),
@@ -726,14 +728,10 @@ heatmap.2(percMethDML, col = plotColors, scale = "none", margins = c(1,1),
           ColSideColors = c(rep("grey90", times = 5), rep("grey10", times = 5)),
           key = TRUE, keysize = 1.8, density.info = "density", key.title = "", key.xlab = "% Methylation", key.ylab = "",
           key.par = list(cex.lab = 2.0, cex.axis = 1.5)) #Create heatmap using heatmap.2 from gplots package using percMethDML data. Use plotColors but do not scale data, label rows, or label columns. Use ColSideColors to indicate colors for treatment and ambient samples. Add a legend using key, and adjust keysize. Have key display density data with density.info. Do not add a key title or y-axis label, and label x axis with key.xlab.
-mtext("Density", cex = 1.6, las = 3, at = c(-0.09, -.1)) #Manually add y-axis label for key since heatmap.2 doesn't let you change font size
+mtext("Density", cex = 1.6, las = 3, adj = 0.8, padj = -29) #Manually add y-axis label for key since heatmap.2 doesn't let you change font size
 
-dev.off()
+#dev.off()
 ```
-
-
-
-
 
 # Differentially methylated regions
 
