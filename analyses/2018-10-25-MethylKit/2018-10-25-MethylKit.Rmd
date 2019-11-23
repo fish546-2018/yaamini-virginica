@@ -16,8 +16,18 @@ knitr::opts_chunk$set(echo = TRUE)
 # Install packages
 
 ```{r}
-install.packages("vegan")
-require(vegan)
+install.packages("vegan") #Install the vegan package
+require(vegan) #Load vegan
+```
+
+```{r}
+install.packages("pheatmap") #Install the pheatmap package
+require(pheatmap) #Load pheatmap
+```
+
+```{r}
+install.packages("gplots") #Install the gplots package
+require(gplots) #Load gplots
 ```
 
 ```{r}
@@ -611,6 +621,118 @@ legend("topright",
 
 #dev.off()
 ```
+
+###### Multipanel plot
+
+```{r}
+#pdf("2019-11-19-PCA-Multpanel.pdf", height = 8.5, width = 11) #Save plot
+
+par(mfrow = c(1, 2), oma = c(5, 2, 2, 0), mar = c(0, 3, 0, 5)) #Set up parameters for multipanel plot
+
+#All CpG Loci
+
+fig.allDataPCA <- ordiplot(allDataPCA, choices = c(1, 2), type = "none", display = "sites", cex = 0.5, xlim = c(-400, 200), xlab = "", ylab = "", xaxt = "n", yaxt = "n") #Use ordiplot to create base biplot. Do not add any points
+points(fig.allDataPCA, "sites", col = c(rep(plotColors[2], times = 5), rep(plotColors[4], times = 5)), pch = c(rep(16, times = 5), rep(17, times = 5)), cex = 3) #Add each sample. Darker samples are ambient, lighter samples are elevated pCO2
+
+#Add multiple white boxes on top of the default black box to manually change the color
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+
+ordiellipse(allDataPCA, plotCustomization$treatment, show.groups = "1", col = plotColors[4]) #Add confidence ellipse around the samples in elevated pCO2
+ordiellipse(allDataPCA, plotCustomization$treatment, show.groups = "0", col = plotColors[2]) #Add confidence ellipse around the samples in ambient pCO2
+
+axis(side =  1, at = seq(-400, 200, 200), col = "grey80", cex.axis = 1.7) #Add x-axis
+mtext(side = 1, text = "PC 1 (18.1%)", line = 3, cex = 1.5) #Add x-axis label
+
+axis(side =  2, labels = TRUE, col = "grey80", cex.axis = 1.7) #Add y-axis
+mtext(side = 2, text = "PC 2 (11.7%)", line = 3, cex = 1.5) #Add y-axis label
+
+mtext(side = 3, line = -5, adj = c(-100,0), text = "    a. All CpG Loci", cex = 1.5)
+
+#DML
+
+fig.DMLDataPCA <- ordiplot(DMLDataPCA, choices = c(1, 2), type = "none", display = "sites", cex = 0.5, xlim = c(-20,20), ylim = c(-10,20), xlab = "", ylab = "", xaxt = "n", yaxt = "n") #Use ordiplot to create base biplot. Do not add any points
+points(fig.DMLDataPCA, "sites", col = c(rep(plotColors[2], times = 5), rep(plotColors[4], times = 5)), pch = c(rep(16, times = 5), rep(17, times = 5)), cex = 3) #Add each sample. Darker samples are ambient, lighter samples are elevated pCO2
+
+#Add multiple white boxes on top of the default black box to manually change the color
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+box(col = "white")
+
+ordiellipse(DMLDataPCA, plotCustomization$treatment, show.groups = "1", col = plotColors[4]) #Add confidence ellipse around the samples in elevated pCO2
+ordiellipse(DMLDataPCA, plotCustomization$treatment, show.groups = "0", col = plotColors[2]) #Add confidence ellipse around the samples in ambient pCO2
+
+axis(side =  1, labels = TRUE, col = "grey80", cex.axis = 1.7) #Add x-axis
+mtext(side = 1, text = "PC 1 (47.6%)", line = 3, cex = 1.5) #Add x-axis label
+
+axis(side =  2, labels = TRUE, col = "grey80", cex.axis = 1.7) #Add y-axis
+mtext(side = 2, text = "PC 2 (9.5%)", line = 3, cex = 1.5) #Add y-axis label
+
+mtext(side = 3, line = -5, adj = c(-100, 0), text = "    b. DML", cex = 1.5) #Add test category
+
+legend(x = 0, y = -22, 
+       pch = c(16, 17), 
+       legend = c("Ambient", "Elevated"), 
+       col = c(plotColors[2], plotColors[4]),
+       y.intersp = 1, x.intersp = 1,
+       cex = 1.7, bty = "n") #Add a legend with information about ambient and elevated samples
+
+#dev.off()
+```
+
+#### DML Heatmap
+
+```{r}
+percMethDML <- percMethylation(DMLMatrix, rowids = TRUE) #Get percent methylation for all samples at DML. Include row IDs (chr, start, end) information
+head(percMethDML) #Confirm percent methylation matrix was created
+```
+
+I'll first use `pheatmap`.
+
+```{r}
+pheatmap(percMethDML, color = rev(plotColors),
+         cluster_rows = TRUE, clustering_distance_rows = "euclidean", treeheight_row = 70, show_rownames = FALSE,
+         cluster_cols = TRUE, clustering_distance_cols = "euclidean", treeheight_col = 40, show_colnames = FALSE,
+         annotation_col = data.frame(pCO2 = factor(rep(c("Ambient","Treatment"), each = 5))),
+         annotation_colors = list(pCO2 = c(Ambient = "grey90", Treatment = "grey10")), 
+         annotation_legend = FALSE, annotation_names_col = FALSE,
+         legend = TRUE) #Create heatmap using pheatmap using percMethDML and plotColors color scheme. Cluster rows and columns using euclidean distances. Adjust the dendogram tree heights and do not show any row or column names. Create a dataframe with treatment information using annotation_col. Use annotation_colors to indicate colors for treatment ("grey90") and ambient ("grey10") samples. Do not include an annotation_legend or name for annotations (annotatino_names_col). Include a legend.
+```
+
+I also want to try using a different heatmap package, `heatmap.2` from `gplots`. `heatmap.2` allows you to add a density plot with the legend, which could be interesting information to include.
+
+```{r}
+pdf("2019-11-19-DML-Only-Heatmap.pdf", height = 8.5, width = 11)
+
+par(oma = c(0, 1, 0, 0)) #Adjust outer margins
+heatmap.2(percMethDML, col = plotColors, scale = "none", margins = c(1,1),
+          trace = "none", tracecol = "black",
+          labRow = FALSE, labCol = FALSE, 
+          ColSideColors = c(rep("grey90", times = 5), rep("grey10", times = 5)),
+          key = TRUE, keysize = 1.8, density.info = "density", key.title = "", key.xlab = "% Methylation", key.ylab = "",
+          key.par = list(cex.lab = 2.0, cex.axis = 1.5)) #Create heatmap using heatmap.2 from gplots package using percMethDML data. Use plotColors but do not scale data, label rows, or label columns. Use ColSideColors to indicate colors for treatment and ambient samples. Add a legend using key, and adjust keysize. Have key display density data with density.info. Do not add a key title or y-axis label, and label x axis with key.xlab.
+mtext("Density", cex = 1.6, las = 3, at = c(-0.09, -.1)) #Manually add y-axis label for key since heatmap.2 doesn't let you change font size
+
+dev.off()
+```
+
+
+
 
 
 # Differentially methylated regions
