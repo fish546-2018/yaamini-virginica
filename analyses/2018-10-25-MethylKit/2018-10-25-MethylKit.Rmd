@@ -722,7 +722,7 @@ I also want to try using a different heatmap package, `heatmap.2` from `gplots`.
 #pdf("2019-11-19-DML-Only-Heatmap.pdf", height = 8.5, width = 11)
 
 par(oma = c(0, 1, 0, 0)) #Adjust outer margins
-heatmap.2(percMethDML, col = plotColors, scale = "none", margins = c(1,1),
+heatmap.2(percMethDML, col = rev(plotColors), scale = "none", margins = c(1,1),
           trace = "none", tracecol = "black",
           labRow = FALSE, labCol = FALSE, 
           ColSideColors = c(rep("grey90", times = 5), rep("grey10", times = 5)),
