@@ -856,6 +856,29 @@ mtext(side = 2, "Number of DML", line = 2, cex = 1.5) #Add y-axis label
 #dev.off()
 ```
 
+### Biomineralization Genes
+
+If methylation changes in adults can impact biomineralization processes in larvae, then biomineralization genes should be differentially methylated in adult gonad tissue. I want to see how many (if any) biomineralization genes contain DML.
+
+```{r}
+biomineralizationGenes <- read.csv("2019-12-09-Biomineralization-Genes.csv", header = TRUE) #Import biomineralization genes Alan compiled
+biomineralizationGenes$geneID <- gsub("LOC", "", biomineralizationGenes$geneID) #Remove extraneous characters. The biomineralization geneID have "LOC," while my master list geneID don't have those characters. I removed these characters
+length(biomineralizationGenes$geneID) #There are 82 biomineralization genes
+head(biomineralizationGenes) #Confirm changes
+```
+
+```{r}
+DMLbiomineralizationGenes <- unique(merge(x = biomineralizationGenes, y = DMLGeneAnnotationNomRNA, by = "geneID")) #Merge DML-gene overlaps where the gene ID matches with biomineralization gene IDs
+DMLbiomineralizationGenes <- DMLbiomineralizationGenes[,-c(7, 12:15)] #Remove extraneous columns
+colnames(DMLbiomineralizationGenes) <- c("geneID", "Product", "chr", "start", "end", "meth.diff", "pvalue", "qvalue", "gene.start", "gene.end")
+length(unique(DMLbiomineralizationGenes$geneID)) #There are four unique biomineralization genes with DML
+head(DMLbiomineralizationGenes) #Confirm merge
+```
+
+```{r}
+write.csv(DMLbiomineralizationGenes, "2019-12-09-Biomineralization-Genes-with-DML.csv", row.names = FALSE, quote = FALSE) #Save file
+```
+
 ### Hypermethylated DML-gene overlaps
 
 ```{r}
