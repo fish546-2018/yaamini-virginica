@@ -587,7 +587,6 @@ mtext(side = 1, "% Genes with DML", line = 3, cex = 1.5) #Add x-axis label
 #dev.off()
 ```
 
-
 ### Cellular components
 
 #### Edit input variables
@@ -1052,6 +1051,46 @@ goAnnotations="2019-07-30-allTested-Promoters-GO-Annotations-Table.tab" # two-co
 goDatabase="go.obo" # download from http://www.geneontology.org/GO.downloads.ontology.shtml
 goDivision="BP" # BP for biological processes
 source("gomwu.functions.R")
+```
+
+#### Run GO-MWU
+
+```{r}
+# Calculating stats. It might take ~3 min for MF and BP. Do not rerun it if you just want to replot the data with different cutoffs, go straight to gomwuPlot. If you change any of the numeric values below, delete the files that were generated in previos runs first.
+gomwuStats(input, goDatabase, goAnnotations, goDivision,
+	perlPath="perl", # replace with full path to perl executable if it is not in your system's PATH already
+	largest=0.1,  # a GO category will not be considered if it contains more than this fraction of the total number of genes
+	smallest=5,   # a GO category should contain at least this many genes to be considered
+	clusterCutHeight=0.25) # threshold for merging similar (gene-sharing) terms. See README for details.
+# There are no GO terms pass 10% FDR.
+```
+
+### Cellular components
+
+#### Edit input variables
+
+```{r}
+goDivision="CC" # CC for cellular components. All other inputs are the same.
+```
+
+#### Run GO-MWU
+
+```{r}
+# Calculating stats. It might take ~3 min for MF and BP. Do not rerun it if you just want to replot the data with different cutoffs, go straight to gomwuPlot. If you change any of the numeric values below, delete the files that were generated in previos runs first.
+gomwuStats(input, goDatabase, goAnnotations, goDivision,
+	perlPath="perl", # replace with full path to perl executable if it is not in your system's PATH already
+	largest=0.1,  # a GO category will not be considered if it contains more than this fraction of the total number of genes
+	smallest=5,   # a GO category should contain at least this many genes to be considered
+	clusterCutHeight=0.25) # threshold for merging similar (gene-sharing) terms. See README for details.
+# There are no GO terms pass 10% FDR.
+```
+
+### Molecular function
+
+#### Edit input variables
+
+```{r}
+goDivision="MF" # MF for molecular function All other inputs are the same.
 ```
 
 #### Run GO-MWU
