@@ -1048,7 +1048,7 @@ head 2019-07-30-allTested-PromoterOverlap-Table-of-Significance-Measures.csv #Co
 
 ```{r}
 input="2019-07-30-allTested-PromoterOverlap-Table-of-Significance-Measures.csv" # two columns of comma-separated values: gene id, continuous measure of significance. To perform standard GO enrichment analysis based on Fisher's exact test, use binary measure (0 or 1, i.e., either sgnificant or not).
-goAnnotations="2019-07-30-allTested-PromoterOverlap-GO-Annotations-Table.tab" # two-column, tab-delimited, one line per gene, multiple GO terms separated by semicolon.
+goAnnotations="2019-07-30-allTested-Promoters-GO-Annotations-Table.tab" # two-column, tab-delimited, one line per gene, multiple GO terms separated by semicolon.
 goDatabase="go.obo" # download from http://www.geneontology.org/GO.downloads.ontology.shtml
 goDivision="BP" # BP for biological processes
 source("gomwu.functions.R")
