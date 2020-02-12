@@ -408,6 +408,10 @@ head(DMLGeneAnnotation) #Confirm subset
 write.csv(DMLGeneAnnotation, "2019-06-20-DML-Gene-Annotation.csv") #Save file
 ```
 
+```{r}
+write.table(DMLGeneAnnotation, "2019-06-20-DML-Gene-Annotation.tab", sep = "\t", col.names = FALSE, row.names = FALSE, quote = FALSE) #Save tab-delimited version of file
+```
+
 ### Characterize DML distribution in genes
 
 ##### Count the number of DML per gene
