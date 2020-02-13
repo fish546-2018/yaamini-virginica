@@ -102,3 +102,4 @@ boxplot(exonMI$percent, intronMI$percent, transElemMI$percent,
 axis(side = 2, at = seq(from = 0, to = 1, by = 0.2), las = 2, col = "grey80")
 ```
 
+
