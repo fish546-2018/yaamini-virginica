@@ -1,0 +1,96 @@
+---
+title: "Chacterizing Methylation Islands"
+output: github_document
+---
+
+# Set up R Markdown Document
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Install packages
+
+```{r}
+#install.packages("dichromat")
+require(dichromat)
+```
+
+# Session information
+
+```{r}
+sessionInfo()
+```
+
+# Import and reformat data
+
+## Exons
+
+```{r}
+exonMI <- read.delim("../2018-11-01-DML-and-DMR-Analysis/2020-02-06-MI-Exons.txt", header = FALSE) #Import overlaps
+exonMI <- exonMI[,-4] #Remove redundant column
+colnames(exonMI) <- c("chr", "exon.start", "exon.end", "MI.start", "MI.end", "overlap") #Add column names
+head(exonMI) #Confirm reformatting
+```
+
+```{r}
+exonMI$MI.length <- exonMI$MI.end - exonMI$MI.start #Calculate MI length
+exonMI$percent <- exonMI$overlap / exonMI$MI.length #Calculate percent overlap
+head(exonMI) #Check calculations
+```
+
+```{r}
+boxplot(exonMI$percent)
+```
+
+## Introns
+
+```{r}
+intronMI <- read.delim("../2018-11-01-DML-and-DMR-Analysis/2020-02-06-MI-Introns.txt", header = FALSE) #Import overlaps
+intronMI <- intronMI[,-4] #Remove redundant column
+colnames(intronMI) <- c("chr", "intron.start", "intron.end", "MI.start", "MI.end", "overlap") #Add column names
+head(intronMI) #Confirm reformatting
+```
+
+```{r}
+intronMI$MI.length <- intronMI$MI.end - intronMI$MI.start #Calculate MI length
+intronMI$percent <- intronMI$overlap / intronMI$MI.length #Calculate percent overlap
+head(intronMI) #Check calculations
+```
+
+## Genes
+
+```{r}
+genesMI <- read.delim("../2018-11-01-DML-and-DMR-Analysis/2020-02-06-MI-Genes.txt", header = FALSE) #Import overlaps
+genesMI <- genesMI[,-4] #Remove redundant column
+colnames(genesMI) <- c("chr", "genes.start", "genes.end", "MI.start", "MI.end", "overlap") #Add column names
+head(genesMI) #Confirm reformatting
+```
+
+```{r}
+genesMI$MI.length <- genesMI$MI.end - genesMI$MI.start #Calculate MI length
+genesMI$percent <- genesMI$overlap / genesMI$MI.length #Calculate percent overlap
+head(genesMI) #Check calculations
+```
+
+## TE
+
+```{r}
+transElemMI <- read.delim("../2018-11-01-DML-and-DMR-Analysis/2020-02-06-MI-TEall.txt", header = FALSE) #Import overlaps
+transElemMI <- transElemMI[,-c(2:3,6:10)] #Remove redundant columns
+colnames(transElemMI) <- c("chr", "TE.start", "TE.end", "MI.start", "MI.end", "overlap") #Add column names
+head(transElemMI) #Confirm reformatting
+```
+
+```{r}
+transElemMI$MI.length <- transElemMI$MI.end - transElemMI$MI.start #Calculate MI length
+transElemMI$percent <- transElemMI$overlap / transElemMI$MI.length #Calculate percent overlap
+head(transElemMI) #Check calculations
+```
+
+# Figures
+
+```{r}
+boxplot(genesMI$percent, exonMI$percent, intronMI$percent, transElemMI$percent, outline = FALSE)
+```
+
