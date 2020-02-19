@@ -695,16 +695,16 @@ layout(mat = plotMatrix, width = c(2, 2, 0.7, 1, 1)) #Create a layout based on p
 #layout.show(n = 6) #Confirm layout looks good
 
 #Chromosome distribution
-DMLbarplot <- barplot(as.matrix(t(DMLchrCounts$DMLCount)),
+DMLbarplot <- barplot(as.matrix(t(DMLchrCounts$DMLbyChrLength)),
                       axes = FALSE, 
                       names.arg = DMLchrCounts$chr,
                       cex.names = 1.5,
                       xlim = c(0.7,11.5),
-                      ylim = c(0,150),
+                      ylim = c(0,1.4),
                       col = plotColors[5]) #Create a barplot and save as a new object. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis. The object contains x coordinates for bars, so xlim is set at 12 to compensate for maximum value of 11.5
 mtext(side = 1, "Chromosome", line = 3, cex = 1.3) #Add x-axis label
-axis(side = 2, line = 1.5, at = seq(0, 150, by = 50), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis for DML counts
-mtext(side = 2, "Number of DML", line = 5, cex = 1.3) #Add y-axis label for DML counts
+axis(side = 2, line = 1.5, at = seq(0, 1.4, by = 0.2), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis for DML counts
+mtext(side = 2, "DML/Chromosome Length (Mb)", line = 5, cex = 1.3) #Add y-axis label for DML counts
 mtext(side = 3, line = -1, at = c(0.5, 130), text = "a") #Add figure label
 
 #Add gene number infomration

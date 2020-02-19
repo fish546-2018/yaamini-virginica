@@ -470,7 +470,13 @@ write.csv(DMLchrCounts, "2019-09-30-DML-per-Chromosome.csv", row.names = FALSE, 
 ```{r}
 DMLchrCounts$geneCount <- c(3932, 4137, 4712, 3896, 6239, 2630, 3015, 4445, 4960, 1527) #Create column with number of gene sequences in each chromosome
 DMLchrCounts$DMLbyGenes <- (DMLchrCounts$DMLCount / DMLchrCounts$geneCount)*100
-head(DMLchrCounts) #Confirm dataframe creation
+head(DMLchrCounts) #Confirm column creation
+```
+
+```{r}
+DMLchrCounts$chrLengthMb <- c(65.67, 61.75, 77.06, 59.69, 98.7, 51.26, 57.83, 75.94, 104.17, 32.65) #Create column with number Mb in each chromosome
+DMLchrCounts$DMLbyChrLength <- (DMLchrCounts$DMLCount / DMLchrCounts$chrLengthMb) #Normalize DML counts by chr length in Mb. Axes should indicate that these counts are multiplied by 10e-6
+head(DMLchrCounts) #Confirm column creation
 ```
 
 ##### Create figure
@@ -480,16 +486,16 @@ head(DMLchrCounts) #Confirm dataframe creation
 
 par(mar = c(5,7,2,10)) #Change figure boundaries
 
-DMLbarplot <- barplot(as.matrix(t(DMLchrCounts$DMLCount)),
+DMLbarplot <- barplot(as.matrix(t(DMLchrCounts$DMLbyChrLength)),
                       axes = FALSE, 
                       names.arg = DMLchrCounts$chr,
                       cex.names = 1.5,
                       xlim = c(0.7,11.5),
-                      ylim = c(0,150),
+                      ylim = c(0,1.4),
                       col = "grey80") #Create a barplot and save as a new object. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis. The object contains x coordinates for bars, so xlim is set at 12 to compensate for maximum value of 11.5
 mtext(side = 1, "Chromosome", line = 3, cex = 1.5) #Add x-axis label
-axis(side = 2, line = 1.5, at = seq(0, 150, by = 50), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis for DML counts
-mtext(side = 2, "Number of DML", line = 5, cex = 1.5) #Add y-axis label for DML counts
+axis(side = 2, line = 1.5, at = seq(0, 1.4, by = 0.2), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis for DML counts
+mtext(side = 2, "DML/Chromosome Length (Mb)", line = 5, cex = 1.5) #Add y-axis label for DML counts
 
 par(new = TRUE) #Create a new plot
 plot(x = DMLbarplot,
