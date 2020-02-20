@@ -578,3 +578,10 @@ analyses/2019-08-14-Differentially-Methylated-Genes/zr2096_9_s1_R1_val_1_bismark
 analyses/2019-08-14-Differentially-Methylated-Genes/uniprot-SP-GO.sorted
 analyses/2018-11-01-DML-and-DMR-Analysis/2019-05-29-Flanking-Analysis/2019-09-26-Promoter-CGmotif.txt
 analyses/2019-03-18-Characterizing-CpG-Methylation/2019-05-29-All5xCpGs-Putative-Promoters.txt
+analyses/2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_TE-all.gff
+analyses/2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_CG-motif.bed.idx
+analyses/2019-03-18-Characterizing-CpG-Methylation/2019-05-29-All5xCpGs-CDS.txt
+analyses/2019-03-18-Characterizing-CpG-Methylation/2019-05-29-All5xCpGs-ExonUTR.txt
+analyses/2019-03-18-Characterizing-CpG-Methylation/2019-05-29-All5xCpGs-nonCDS.txt
+analyses/2019-03-18-Characterizing-CpG-Methylation/2019-05-29-MethLoci-nonCDS.txt
+analyses/2019-03-18-Characterizing-CpG-Methylation/2019-05-29-MethLoci-CDS.txt
