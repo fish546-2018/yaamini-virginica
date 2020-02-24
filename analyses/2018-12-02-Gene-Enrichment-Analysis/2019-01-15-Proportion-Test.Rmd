@@ -540,7 +540,11 @@ legend("topright",
         col = "black", 
         pt.bg = plotColors,
        bty = "n",
-       cex = 1) #Place a legend in the top right of the figure with no box. pch = 22 has a background and outline. col changes the outline, pt.bg changes the point fill
+       cex = 1.5) #Place a legend in the top right of the figure with no box. pch = 22 has a background and outline. col changes the outline, pt.bg changes the point fill
 
 #dev.off()
 ```
+
+## Multipanel plot
+
+
