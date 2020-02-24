@@ -524,8 +524,8 @@ boxplot(promoterMI$percent,
         intergenicMI$percent, 
         outline = FALSE, 
         lty = 1, lwd = 1.5,
-        axes = FALSE, names = c("Exons", "Introns", "Transposable Elements"), ylim = c(0,100),
-        col = plotColors[1:6], border = "grey20") #Create a boxplot with exon, intron, and transposable element MI overlap data that are colored according to plotColors. Do not plot outlier information (outline = FALSE). Do not use dashed lines (lty = 1), increase line thickness (lwd = 1.5), and change border color (border).
+        axes = FALSE,ylim = c(0,100),
+        col = plotColors[1:6], border = "grey20") #Create with MI overlap data that are colored according to plotColors. Do not plot outlier information (outline = FALSE). Do not use dashed lines (lty = 1), increase line thickness (lwd = 1.5), and change border color (border).
 
 mtext(side = 1, "Genomic Feature", line = 2, cex = 1.5) #Add x-axis label
 axis(side = 2, at = seq(from = 0, to = 100, by = 10), las = 2, col = "grey80", cex = 1.2) #Add y-axis
@@ -540,7 +540,7 @@ legend("topright",
         col = "black", 
         pt.bg = plotColors[1:6],
        bty = "n",
-       cex = 1.5) #Place a legend in the top right of the figure with no box. pch = 22 has a background and outline. col changes the outline, pt.bg changes the point fill
+       cex = 1) #Place a legend in the top right of the figure with no box. pch = 22 has a background and outline. col changes the outline, pt.bg changes the point fill
 
 #dev.off()
 ```
