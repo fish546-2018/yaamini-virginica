@@ -253,10 +253,6 @@ head 2019-04-09-All-5x-CpGs.bedgraph-promoterOverlap-percentMeth
 ### Calculate median methylation
 
 ```{bash}
-find *promoterOverlap-percentMeth
-```
-
-```{bash}
 #For each file that ends in *promoterOverlap-percentMeth
 #Sort numerically
 #Calculate the median of the sixth column (percent methylation) for each file
@@ -270,9 +266,288 @@ done
 
 ## UTRs
 
+```{bash}
+head -n 1 ../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_exonUTR_yrv.bed #Check promoter track
+```
+
+### Run `intersectBed`
+
+```{bash}
+#For each file that ends in posOnly
+#Use intersectBed to find where loci and promoters intersect
+#wb: Print all lines in the second file
+#a: file that ends in posOnly
+#b: promoter track
+#Only keep specified columns
+#Save output in a new file that has the same base name and ends in -promoterOverlap
+for f in *posOnly
+do
+  /Users/Shared/bioinformatics/bedtools2/bin/intersectBed \
+  -wb \
+  -a ${f} \
+  -b ../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_exonUTR_yrv.bed \
+    | awk '{print $1"\t"$2"\t"$3"\t"$5"\t"$6}' \
+  > ${f}-UTROverlap
+done
+```
+
+```{bash}
+find *UTROverlap
+```
+
+```{bash}
+head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-UTROverlap #Confirm file is annotated
+```
+
+### Add back percent methylation information
+
+```{bash}
+#For each file that ends in UTROverlap
+#Print the first three columns (chr, start, end) with dashes in between, then the rest of the columns in the file
+#Save the file with the base name + .sorted
+for f in *UTROverlap
+do
+  awk '{print $1"-"$2"-"$3"\t"$0}' ${f} \
+  | sort -k1,1 \
+  > ${f}.sorted
+done
+```
+
+```{bash}
+find *UTROverlap.sorted
+```
+
+```{bash}
+head -n 1 zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-UTROverlap.sorted
+```
+
+```{bash}
+#For each file that ends in bedgraph
+#Join 2 files using the first column. The files and tab-delimited and the output should also be tab-delimited
+#The first file ends with .sorted
+#The second file ends with .posOnly-UTROverlap.sorted
+#Add .annotated.percentMeth to the base name of the output file
+for f in *bedgraph
+do
+  join -j 1 -t $'\t' \
+  ${f}.sorted \
+  ${f}.posOnly-UTROverlap.sorted \
+  | awk '{print $2"\t"$3"\t"$4"\t"$9"\t"$10"\t"$5}' \
+  > ${f}-UTROverlap-percentMeth
+done
+```
+
+```{bash}
+find *UTROverlap-percentMeth
+```
+
+```{bash}
+head 2019-04-09-All-5x-CpGs.bedgraph-UTROverlap-percentMeth
+```
+
+### Calculate median methylation
+
+```{bash}
+#For each file that ends in *UTROverlap-percentMeth
+#Sort numerically
+#Calculate the median of the sixth column (percent methylation) for each file
+#Save output in a new file
+for f in *UTROverlap-percentMeth
+do
+  sort -n ${f} \
+  | awk ' { a[i++]=$6; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'
+done
+```
+
 ## Exons
 
+```{bash}
+head -n 1 ../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_exon_sorted_yrv.bed #Check track
+```
+
+### Run `intersectBed`
+
+```{bash}
+#For each file that ends in posOnly
+#Use intersectBed to find where loci and promoters intersect
+#wb: Print all lines in the second file
+#a: file that ends in posOnly
+#b: exon track
+#Only keep specified columns
+#Save output in a new file that has the same base name and ends in -promoterOverlap
+for f in *posOnly
+do
+  /Users/Shared/bioinformatics/bedtools2/bin/intersectBed \
+  -wb \
+  -a ${f} \
+  -b ../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_exon_sorted_yrv.bed \
+    | awk '{print $1"\t"$2"\t"$3"\t"$5"\t"$6}' \
+  > ${f}-exonOverlap
+done
+```
+
+```{bash}
+find *exonOverlap
+```
+
+```{bash}
+head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-exonOverlap #Confirm file is annotated
+```
+
+### Add back percent methylation information
+
+```{bash}
+#For each file that ends in exonOverlap
+#Print the first three columns (chr, start, end) with dashes in between, then the rest of the columns in the file
+#Save the file with the base name + .sorted
+for f in *exonOverlap
+do
+  awk '{print $1"-"$2"-"$3"\t"$0}' ${f} \
+  | sort -k1,1 \
+  > ${f}.sorted
+done
+```
+
+```{bash}
+find *exonOverlap.sorted
+```
+
+```{bash}
+head -n 1 zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-exonOverlap.sorted
+```
+
+```{bash}
+#For each file that ends in bedgraph
+#Join 2 files using the first column. The files and tab-delimited and the output should also be tab-delimited
+#The first file ends with .sorted
+#The second file ends with .posOnly-exonOverlap.sorted
+#Add .annotated.percentMeth to the base name of the output file
+for f in *bedgraph
+do
+  join -j 1 -t $'\t' \
+  ${f}.sorted \
+  ${f}.posOnly-exonOverlap.sorted \
+  | awk '{print $2"\t"$3"\t"$4"\t"$9"\t"$10"\t"$5}' \
+  > ${f}-exonOverlap-percentMeth
+done
+```
+
+```{bash}
+find *exonOverlap-percentMeth
+```
+
+```{bash}
+head 2019-04-09-All-5x-CpGs.bedgraph-exonOverlap-percentMeth
+```
+
+### Calculate median methylation
+
+```{bash}
+#For each file that ends in *exonOverlap-percentMeth
+#Sort numerically
+#Calculate the median of the sixth column (percent methylation) for each file
+#Save output in a new file
+for f in *exonOverlap-percentMeth
+do
+  sort -n ${f} \
+  | awk ' { a[i++]=$6; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'
+done
+```
+
 ## Introns
+
+```{bash}
+head -n 1 ../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_intron_yrv.bed #Check track
+```
+
+### Run `intersectBed`
+
+```{bash}
+#For each file that ends in posOnly
+#Use intersectBed to find where loci and promoters intersect
+#wb: Print all lines in the second file
+#a: file that ends in posOnly
+#b: exon track
+#Only keep specified columns
+#Save output in a new file that has the same base name and ends in -intronOverlap
+for f in *posOnly
+do
+  /Users/Shared/bioinformatics/bedtools2/bin/intersectBed \
+  -wb \
+  -a ${f} \
+  -b ../2019-05-13-Generating-Genome-Feature-Tracks/C_virginica-3.0_Gnomon_intron_yrv.bed \
+    | awk '{print $1"\t"$2"\t"$3"\t"$5"\t"$6}' \
+  > ${f}-intronOverlap
+done
+```
+
+```{bash}
+find *intronOverlap
+```
+
+```{bash}
+head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-intronOverlap #Confirm file is annotated
+```
+
+### Add back percent methylation information
+
+```{bash}
+#For each file that ends in intronOverlap
+#Print the first three columns (chr, start, end) with dashes in between, then the rest of the columns in the file
+#Save the file with the base name + .sorted
+for f in *intronOverlap
+do
+  awk '{print $1"-"$2"-"$3"\t"$0}' ${f} \
+  | sort -k1,1 \
+  > ${f}.sorted
+done
+```
+
+```{bash}
+find *intronOverlap.sorted
+```
+
+```{bash}
+head -n 1 zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-intronOverlap.sorted
+```
+
+```{bash}
+#For each file that ends in bedgraph
+#Join 2 files using the first column. The files and tab-delimited and the output should also be tab-delimited
+#The first file ends with .sorted
+#The second file ends with .posOnly-intronOverlap.sorted
+#Add .annotated.percentMeth to the base name of the output file
+for f in *bedgraph
+do
+  join -j 1 -t $'\t' \
+  ${f}.sorted \
+  ${f}.posOnly-intronOverlap.sorted \
+  | awk '{print $2"\t"$3"\t"$4"\t"$9"\t"$10"\t"$5}' \
+  > ${f}-intronOverlap-percentMeth
+done
+```
+
+```{bash}
+find *intronOverlap-percentMeth
+```
+
+```{bash}
+head 2019-04-09-All-5x-CpGs.bedgraph-intronOverlap-percentMeth
+```
+
+### Calculate median methylation
+
+```{bash}
+#For each file that ends in *intronOverlap-percentMeth
+#Sort numerically
+#Calculate the median of the sixth column (percent methylation) for each file
+#Save output in a new file
+for f in *intronOverlap-percentMeth
+do
+  sort -n ${f} \
+  | awk ' { a[i++]=$6; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'
+done
+```
 
 ## Transposable elements
 
