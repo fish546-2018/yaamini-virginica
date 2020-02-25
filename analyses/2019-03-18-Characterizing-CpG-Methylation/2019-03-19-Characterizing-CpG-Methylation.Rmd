@@ -7,17 +7,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-In this script, I'll create figures to characterize CpG methylation in my *C. virginica* gonad samples. I will use a list of CpGs with at least 5x coverage in any samples.
+In this script, I'll create figures to characterize CpG methylation in my *C. virginica* gonad samples. I will use a list of CpGs with at least 5x coverage in any samples to look at the distribution of methylated CpGs. I'll also use individual sample bedgraphs to calculate percent methylation across genome features.
 
-## Session information
+# Session information
 
 ```{r}
 sessionInfo()
 ```
 
-## All 5x CpGs
+# Distribution of CpGs
 
-### Import data
+## Import data
 
 ```{r}
 cpgMethylation <- read.csv("2019-04-09-All-5x-CpGs.csv", header = FALSE) #Import file with CpG methylation for all loci with 5x coverage
@@ -29,7 +29,7 @@ head(cpgMethylation) #Confirm import
 
 ```{r}
 RColorBrewer::display.brewer.all() #Show all RColorBrewer palettes. I will choose greens.
-plotColors <- rev(RColorBrewer::brewer.pal(5, "GnBu")) #Create a color palette for the barplots. Use 5 green-blue shades from RColorBrewer. Reverse theorder so the darkest shade is used first.
+plotColors <- rev(RColorBrewer::brewer.pal(7, "GnBu")) #Create a color palette for the barplots. Use 5 green-blue shades from RColorBrewer. Reverse theorder so the darkest shade is used first.
 barplot(t(t(proportionData)),
         col = plotColors) #See what plot looks like with new scheme
 barplot(t(t(proportionData)),
@@ -63,7 +63,7 @@ colnames(methLociGeneOverlaps) <- c("chromosome", "start", "end", "gene-start", 
 head(methLociGeneOverlaps) #Confirm import
 ```
 
-### Scaled DML distribution
+### Scaled methylated CpG distribution
 
 Scaling each gene from 0% to 100%, I want to see where methylated CpG are located. This is useful to see if methylation is occuring in any consistent location for each gene. 
 
@@ -93,6 +93,197 @@ mtext(side = 2, "Number of Methylated CpG", line = 4, cex = 1.5) #Add y-axis lab
 #dev.off()
 ```
 
+# Percent methylation of genome features
 
+For each genome feature, I will do the following:
+
+1. Interect sample bedgraphs with genome feature track
+2. Add percent methylation information
+2. Calculate median percent methylation for the entire matrix
+
+## Check format of previously-generated files and copy to current folder
+
+```{bash}
+head ../2019-08-14-Differentially-Methylated-Genes/zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph #Individual sample bedgraph with all information
+```
+
+```{bash}
+cp ../2019-08-14-Differentially-Methylated-Genes/*5x.bedgraph .
+```
+
+```{bash}
+find *5x.bedgraph
+```
+
+```{bash}
+head ../2019-08-14-Differentially-Methylated-Genes/zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly #Individual sample bedgraph with chromosome, start, and end position only
+```
+
+```{bash}
+cp ../2019-08-14-Differentially-Methylated-Genes/*posOnly .
+```
+
+```{bash}
+find *posOnly
+```
+
+```{bash}
+head ../2019-08-14-Differentially-Methylated-Genes/zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.sorted #Indvidual sample bedgraph with merged chr, start, end information to join files
+```
+
+```{bash}
+cp ../2019-08-14-Differentially-Methylated-Genes/*bedgraph.sorted .
+```
+
+```{bash}
+find *bedgraph.sorted
+```
+
+## Reformat global methylation file
+
+```{bash}
+head 2019-04-09-All-5x-CpGs.bedgraph #Check current file
+```
+
+```{bash}
+awk '{print $1"\t"$2"\t"$3}' 2019-04-09-All-5x-CpGs.bedgraph > 2019-04-09-All-5x-CpGs.bedgraph.posOnly #Remove percent methylation information
+```
+
+```{bash}
+head 2019-04-09-All-5x-CpGs.bedgraph.posOnly
+```
+
+```{bash}
+#Create a version of the file that can be used to add percent methylation information back with a join command
+
+awk '{print $1"-"$2"-"$3"\t"$1"\t"$2"\t"$3"\t"$4}' 2019-04-09-All-5x-CpGs.bedgraph \
+| sort -k1,1 \
+> 2019-04-09-All-5x-CpGs.bedgraph.sorted 
+```
+
+```{bash}
+head 2019-04-09-All-5x-CpGs.bedgraph.sorted
+```
+
+## Putative promoters
+
+```{bash}
+head -n 1 ../2018-11-01-DML-and-DMR-Analysis/2019-05-29-Flanking-Analysis/2019-05-29-mRNA-Promoter-Track.bed #Check promoter track
+```
+
+### Run `intersectBed`
+
+```{bash}
+find *posOnly
+```
+
+```{bash}
+#For each file that ends in posOnly
+#Use intersectBed to find where loci and promoters intersect
+#wb: Print all lines in the second file
+#a: file that ends in posOnly
+#b: promoter track
+#Only keep specified columns
+#Save output in a new file that has the same base name and ends in -promoterOverlap
+for f in *posOnly
+do
+  /Users/Shared/bioinformatics/bedtools2/bin/intersectBed \
+  -wb \
+  -a ${f} \
+  -b ../2018-11-01-DML-and-DMR-Analysis/2019-05-29-Flanking-Analysis/2019-05-29-mRNA-Promoter-Track.bed \
+  | awk '{print $1"\t"$2"\t"$3"\t"$7"\t"$8}' \
+  > ${f}-promoterOverlap
+done
+```
+
+```{bash}
+find *promoterOverlap
+```
+
+```{bash}
+head zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-promoterOverlap #Confirm file is annotated
+```
+
+### Add back percent methylation information
+
+```{bash}
+#For each file that ends in promoterOverlap
+#Print the first three columns (chr, start, end) with dashes in between, then the rest of the columns in the file
+#Save the file with the base name + .sorted
+for f in *promoterOverlap
+do
+  awk '{print $1"-"$2"-"$3"\t"$0}' ${f} \
+  | sort -k1,1 \
+  > ${f}.sorted
+done
+```
+
+```{bash}
+find *promoterOverlap.sorted
+```
+
+```{bash}
+head -n 1 zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly-promoterOverlap.sorted
+```
+
+```{bash}
+#For each file that ends in bedgraph
+#Join 2 files using the first column. The files and tab-delimited and the output should also be tab-delimited
+#The first file ends with .sorted
+#The second file ends with .posOnly-promoterOverlap.sorted
+#Add .annotated.percentMeth to the base name of the output file
+for f in *bedgraph
+do
+  join -j 1 -t $'\t' \
+  ${f}.sorted \
+  ${f}.posOnly-promoterOverlap.sorted \
+  | awk '{print $2"\t"$3"\t"$4"\t"$9"\t"$10"\t"$5}' \
+  > ${f}-promoterOverlap-percentMeth
+done
+```
+
+```{bash}
+find *promoterOverlap-percentMeth
+```
+
+```{bash}
+head 2019-04-09-All-5x-CpGs.bedgraph-promoterOverlap-percentMeth
+```
+
+### Calculate median methylation
+
+#### Global methylation
+
+```{bash}
+sort -n 2019-04-09-All-5x-CpGs.bedgraph-promoterOverlap-percentMeth | awk ' { a[i++]=$6; }
+    END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'
+```
+
+#### Control samples
+
+```{bash}
+wc -l <(cut -f6 zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth) \
+<(cut -f6 zr2096_2_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth) \
+<(cut -f6 zr2096_3_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth) \
+<(cut -f6 zr2096_4_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth) \
+<(cut -f6 zr2096_5_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth)
+```
+
+
+#### Treatment samples
+
+## UTRs
+
+## Exons
+
+```{bash}
+head ../2019-08-14-Differentially-Methylated-Genes/zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly
+```
+
+## Introns
+
+## Transposable elements
+
+## Intergenic regions
 
 
