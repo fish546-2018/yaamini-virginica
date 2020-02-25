@@ -252,33 +252,25 @@ head 2019-04-09-All-5x-CpGs.bedgraph-promoterOverlap-percentMeth
 
 ### Calculate median methylation
 
-#### Global methylation
-
 ```{bash}
-sort -n 2019-04-09-All-5x-CpGs.bedgraph-promoterOverlap-percentMeth | awk ' { a[i++]=$6; }
-    END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'
+find *promoterOverlap-percentMeth
 ```
 
-#### Control samples
-
 ```{bash}
-wc -l <(cut -f6 zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth) \
-<(cut -f6 zr2096_2_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth) \
-<(cut -f6 zr2096_3_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth) \
-<(cut -f6 zr2096_4_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth) \
-<(cut -f6 zr2096_5_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph-promoterOverlap-percentMeth)
+#For each file that ends in *promoterOverlap-percentMeth
+#Sort numerically
+#Calculate the median of the sixth column (percent methylation) for each file
+#Save output in a new file
+for f in *promoterOverlap-percentMeth
+do
+  sort -n ${f} \
+  | awk ' { a[i++]=$6; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'
+done
 ```
-
-
-#### Treatment samples
 
 ## UTRs
 
 ## Exons
-
-```{bash}
-head ../2019-08-14-Differentially-Methylated-Genes/zr2096_1_s1_R1_val_1_bismark_bt2_pe.deduplicated.bismark.cov_5x.bedgraph.posOnly
-```
 
 ## Introns
 
