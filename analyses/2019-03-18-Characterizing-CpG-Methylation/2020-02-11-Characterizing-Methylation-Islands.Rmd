@@ -22,7 +22,35 @@ require(dichromat)
 sessionInfo()
 ```
 
-# Import and reformat data
+# Methylation island characteristics
+
+## Import data
+
+```{r}
+methylationIslands <- read.delim("2020-02-06-Methylation-Islands-500_0.02_25-filtered.tab", header = FALSE) #Import methylation island list
+colnames(methylationIslands) <- c("chr", "MI.start", "MI.end", "mCpGs", "MI.length") #Add column names
+head(methylationIslands) #Confirm file format
+```
+
+## Calculate statistics
+
+```{r}
+range(methylationIslands$mCpGs) #Calculate the range of the number of mCpGs
+median(methylationIslands$mCpGs) #Calculate the median number of mCpGs in an island
+```
+
+```{r}
+range(methylationIslands$MI.length) #Calculate the range MI length
+median(methylationIslands$MI.length) #Calculate the median MI length
+```
+
+```{r}
+methIslandLengthDistr <- hist(methylationIslands$MI.length) #Create histogram and save output to characterize length distribution
+methIslandLengthDistr$breaks #Look at bins for methylation island length
+methIslandLengthDistr$counts #Look at counts for number of islands in bins
+```
+
+# Individual feature overlap with methylation islands
 
 ## Putative promoters
 
@@ -150,4 +178,4 @@ legend("topright",
 #dev.off()
 ```
 
-## Multipanel plot
+
