@@ -792,7 +792,7 @@ tail(featureMedMeth) #Confirm formatting
 ### All median methylation for all features
 
 ```{r}
-#pdf("2019-02-25-All-Median-Methylation-Across-Features.pdf", height = 8.5, width = 11)
+#pdf("2020-02-25-All-Median-Methylation-Across-Features.pdf", height = 8.5, width = 11)
 par(mar = c(3,5,1,8)) #Change figure boundaries
 
 barplot(t(featureMedMeth), 
@@ -822,7 +822,7 @@ legend("topright",
 ```
 
 ```{r}
-#pdf("2019-02-25-All-Median-Methylation-Across-Split-Features.pdf", height = 8.5, width = 11)
+#pdf("2020-02-25-All-Median-Methylation-Across-Split-Features.pdf", height = 8.5, width = 11)
 par(mar = c(3,4,0,0), oma = c(0, 2.5, 2, 0), mfrow = c(3,2)) #Change figure boundaries
 
 barplot(t(featureMedMeth[1,]), 
@@ -898,7 +898,7 @@ mtext(side = 3, " f. Intergenic regions", line = -0.5, adj = 0) #Add figure labe
 ### Global methylation only
 
 ```{r}
-#pdf("2019-02-25-Global-Median-Methylation-Across-Features.pdf", height = 8.5, width = 11)
+#pdf("2020-02-25-Global-Median-Methylation-Across-Features.pdf", height = 8.5, width = 11)
 par(mar = c(3,5,1,15)) #Change figure boundaries
 
 barplot(featureMedMeth$global, 
@@ -927,7 +927,7 @@ legend("topright",
 ### Samples only
 
 ```{r}
-#pdf("2019-02-25-Sample-Median-Methylation-Across-Features.pdf", height = 8.5, width = 11)
+#pdf("2020-02-25-Sample-Median-Methylation-Across-Features.pdf", height = 8.5, width = 11)
 par(mar = c(3,5,1,8)) #Change figure boundaries
 
 barplot(t(featureMedMeth[,2:11]), 
