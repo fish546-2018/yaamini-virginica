@@ -50,6 +50,14 @@ methIslandLengthDistr$breaks #Look at bins for methylation island length
 methIslandLengthDistr$counts #Look at counts for number of islands in bins
 ```
 
+```{r}
+methIslandLengths <- t(methylationIslands$MI.length)
+```
+
+```{r}
+gap.barplot(methIslandLengths, gap = c(40, 30,000))
+```
+
 # Individual feature overlap with methylation islands
 
 ## Putative promoters
