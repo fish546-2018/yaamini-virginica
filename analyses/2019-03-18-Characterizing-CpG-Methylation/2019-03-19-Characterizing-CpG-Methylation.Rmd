@@ -763,3 +763,212 @@ done) > 2020-02-25-intergenicOverlap-percentMeth-Medians.txt
 cat 2020-02-25-intergenicOverlap-percentMeth-Medians.txt
 ```
 
+## Plot median methylation
+
+### Reformat data
+
+```{r}
+#Import median methylation information
+
+promoterMedMeth <- read.delim("2020-02-25-promoterOverlap-percentMeth-Medians.txt", header = FALSE)
+UTRMedMeth <- read.delim("2020-02-25-UTROverlap-percentMeth-Medians.txt", header = FALSE)
+exonMedMeth <- read.delim("2020-02-25-exonOverlap-percentMeth-Medians.txt", header = FALSE)
+intronMedMeth <- read.delim("2020-02-25-intronOverlap-percentMeth-Medians.txt", header = FALSE)
+TEMedMeth <- read.delim("2020-02-25-TEOverlap-percentMeth-Medians.txt", header = FALSE)
+intergenicMedMeth <- read.delim("2020-02-25-intergenicOverlap-percentMeth-Medians.txt", header = FALSE)
+```
+
+```{r}
+featureMedMeth <- cbind(promoterMedMeth, UTRMedMeth, exonMedMeth, intronMedMeth, TEMedMeth, intergenicMedMeth) #Create a dataframe with percent methylation information across features
+colnames(featureMedMeth) <- c("promoter", "UTR", "exon", "intron", "TE", "intergenic") #Add column names
+featureMedMeth[12,] <- featureMedMeth[2,] #Move sample 10 information to the end
+featureMedMeth <- featureMedMeth[-2,] #Remove sample 10 information in the incorrect position
+row.names(featureMedMeth) <- c("global", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10") #Add row names with sample distinctions
+featureMedMeth <- as.data.frame(t(featureMedMeth)) #Transpose dataframe
+tail(featureMedMeth) #Confirm formatting
+```
+
+
+### All median methylation for all features
+
+```{r}
+#pdf("2019-02-25-All-Median-Methylation-Across-Features.pdf", height = 8.5, width = 11)
+par(mar = c(3,5,1,8)) #Change figure boundaries
+
+barplot(t(featureMedMeth), 
+        beside = TRUE, 
+        axes = FALSE, 
+        names.arg = c("Promoters", "UTR", "Exons", "Introns", "TE", "Intergenic"),
+        col = c(plotColors[1],
+                rep(plotColors[2], times = 5), 
+                rep(plotColors[4], times = 5)),
+        ylim = c(0,100)) #Create a grouped barplot (beside = TRUE) using a transposed version of the proportion data. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+
+axis(side = 2, at = seq(0, 100, by = 10), las = 2, col = "grey80", cex = 1.2)
+mtext(side = 2, "Methylation (%)", line = 3, cex = 1.5) #Add y-axis label
+
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE) #Create new plot
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n") #Add new plot on top of current plot
+legend("topright",
+       xpd = TRUE,
+       legend = c("Global", "Control", "Treatment"),
+       pch = 22, 
+        col = "black", 
+        pt.bg = c(plotColors[1], plotColors[2], plotColors[4]),
+       bty = "n",
+       cex = 1.5) #Place a legend in the top right of the figure with no box. pch = 22 has a background and outline. col changes the outline, pt.bg changes the point fill
+
+#dev.off()
+```
+
+```{r}
+#pdf("2019-02-25-All-Median-Methylation-Across-Split-Features.pdf", height = 8.5, width = 11)
+par(mar = c(3,4,0,0), oma = c(0, 2.5, 2, 0), mfrow = c(3,2)) #Change figure boundaries
+
+barplot(t(featureMedMeth[1,]), 
+        beside = TRUE, 
+        axes = FALSE, 
+        names.arg = rep("", times = 11),
+        col = c(plotColors[1],
+                rep(plotColors[2], times = 5), 
+                rep(plotColors[4], times = 5)),
+        ylim = c(0,120)) #Create a grouped barplot (beside = TRUE) using a transposed version of the promoter percent methylation data. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+axis(side = 2, at = seq(0, 100, by = 20), las = 2, col = "grey80", cex = 1.2) #Add y-axis
+mtext(side = 3, " a. Putative promoters", line = -0.5, adj = 0) #Add figure label
+mtext(side = 2, "Methylation (%)", line = 0, cex = 1.5, outer = TRUE) #Add y-axis outer label
+
+barplot(t(featureMedMeth[2,]), 
+        beside = TRUE, 
+        axes = FALSE, 
+        names.arg = rep("", times = 11),
+        col = c(plotColors[1],
+                rep(plotColors[2], times = 5), 
+                rep(plotColors[4], times = 5)),
+        ylim = c(0,120)) #Create a grouped barplot (beside = TRUE) using a transposed version of the UTR percent methylation data. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+axis(side = 2, at = seq(0, 100, by = 20), las = 2, col = "grey80", cex = 1.2) #Add y-axis
+mtext(side = 3, " b. UTR", line = -0.5, adj = 0) #Add figure label
+
+barplot(t(featureMedMeth[3,]), 
+        beside = TRUE, 
+        axes = FALSE, 
+        names.arg = rep("", times = 11),
+        col = c(plotColors[1],
+                rep(plotColors[2], times = 5), 
+                rep(plotColors[4], times = 5)),
+        ylim = c(0,120)) #Create a grouped barplot (beside = TRUE) using a transposed version of the exon percent methylation data. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+axis(side = 2, at = seq(0, 100, by = 20), las = 2, col = "grey80", cex = 1.2) #Add y-axis
+mtext(side = 3, " c. Exons", line = -0.5, adj = 0) #Add figure label
+
+barplot(t(featureMedMeth[4,]), 
+        beside = TRUE, 
+        axes = FALSE, 
+        names.arg = rep("", times = 11),
+        col = c(plotColors[1],
+                rep(plotColors[2], times = 5), 
+                rep(plotColors[4], times = 5)),
+        ylim = c(0,120)) #Create a grouped barplot (beside = TRUE) using a transposed version of the intron percent methylation data. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+axis(side = 2, at = seq(0, 100, by = 20), las = 2, col = "grey80", cex = 1.2) #Add y-axis
+mtext(side = 3, " d. Introns", line = -0.5, adj = 0) #Add figure label
+
+barplot(t(featureMedMeth[5,]), 
+        beside = TRUE, 
+        axes = FALSE, 
+        names.arg = c("G", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"),
+        col = c(plotColors[1],
+                rep(plotColors[2], times = 5), 
+                rep(plotColors[4], times = 5)),
+        ylim = c(0,120)) #Create a grouped barplot (beside = TRUE) using a transposed version of the TE percent methylation data. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+axis(side = 2, at = seq(0, 100, by = 20), las = 2, col = "grey80", cex = 1.2) #Add y-axis
+mtext(side = 3, " e. Transposable elements", line = -0.5, adj = 0) #Add figure label
+
+barplot(t(featureMedMeth[6,]), 
+        beside = TRUE, 
+        axes = FALSE, 
+        names.arg = c("G", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"),
+        col = c(plotColors[1],
+                rep(plotColors[2], times = 5), 
+                rep(plotColors[4], times = 5)),
+        ylim = c(0,120)) #Create a grouped barplot (beside = TRUE) using a transposed version of the intergenic percent methylation data. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+axis(side = 2, at = seq(0, 100, by = 20), las = 2, col = "grey80", cex = 1.2) #Add y-axis
+mtext(side = 3, " f. Intergenic regions", line = -0.5, adj = 0) #Add figure label
+
+#dev.off()
+```
+
+### Global methylation only
+
+```{r}
+#pdf("2019-02-25-Global-Median-Methylation-Across-Features.pdf", height = 8.5, width = 11)
+par(mar = c(3,5,1,15)) #Change figure boundaries
+
+barplot(featureMedMeth$global, 
+        axes = FALSE, 
+        names.arg = c("", "", "", "", "", ""),
+        col = plotColors[1:6],
+        ylim = c(0,100)) #Create a barplot using a transposed version of the proportion data. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+
+axis(side = 2, at = seq(0, 100, by = 10), las = 2, col = "grey80", cex = 1.2)
+mtext(side = 2, "Methylation (%)", line = 3, cex = 1.5) #Add y-axis label
+
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE) #Create new plot
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n") #Add new plot on top of current plot
+legend("topright",
+       xpd = TRUE,
+       legend = c("Putative Promoters", "UTRs", "Exons", "Introns", "Transposable Elements", "Intergenic"),
+       pch = 22, 
+        col = "black", 
+        pt.bg = plotColors[1:6],
+       bty = "n",
+       cex = 1.5) #Place a legend in the top right of the figure with no box. pch = 22 has a background and outline. col changes the outline, pt.bg changes the point fill
+
+#dev.off()
+```
+
+### Samples only
+
+```{r}
+#pdf("2019-02-25-Sample-Median-Methylation-Across-Features.pdf", height = 8.5, width = 11)
+par(mar = c(3,5,1,8)) #Change figure boundaries
+
+barplot(t(featureMedMeth[,2:11]), 
+        beside = TRUE, 
+        axes = FALSE, 
+        names.arg = c("Promoters", "UTR", "Exons", "Introns", "TE", "Intergenic"),
+        col = c(rep(plotColors[2], times = 5), 
+                rep(plotColors[4], times = 5)),
+        ylim = c(0,100)) #Create a grouped barplot (beside = TRUE) using a transposed version of the proportion data. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+
+axis(side = 2, at = seq(0, 100, by = 10), las = 2, col = "grey80", cex = 1.2)
+mtext(side = 2, "Methylation (%)", line = 3, cex = 1.5) #Add y-axis label
+
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE) #Create new plot
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n") #Add new plot on top of current plot
+legend("topright",
+       xpd = TRUE,
+       legend = c("Control", "Treatment"),
+       pch = 22, 
+        col = "black", 
+        pt.bg = c(plotColors[2], plotColors[4]),
+       bty = "n",
+       cex = 1.5) #Place a legend in the top right of the figure with no box. pch = 22 has a background and outline. col changes the outline, pt.bg changes the point fill
+
+#dev.off()
+```
+
+
+
+```{r}
+
+
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE) #Create new plot
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n") #Add new plot on top of current plot
+legend("topright",
+       xpd = TRUE,
+       legend = c("Control", "Treatment"),
+       pch = 22, 
+        col = "black", 
+        pt.bg = c(plotColors[2], plotColors[4]),
+       bty = "n",
+       cex = 1.5) #Place a legend in the top right of the figure with no box. pch = 22 has a background and outline. col changes the outline, pt.bg changes the point fill
+```
+
