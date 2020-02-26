@@ -55,7 +55,7 @@ methIslandLengths <- t(methylationIslands$MI.length)
 ```
 
 ```{r}
-gap.barplot(methIslandLengths, gap = c(40, 30,000))
+gap.barplot(methylationIslands$MI.length, gap = c(40, 30,000))
 ```
 
 # Individual feature overlap with methylation islands
