@@ -562,10 +562,7 @@ barsGOSlim <- barplot(-1*(parentGOBPGOslimCounts$percentage),
                       horiz = TRUE,
                       axes = FALSE,
                       xlim = c(-18,0),
-                      col = c(rep(plotColors[2], times = 5),
-                              rep(plotColors[4], times = 3),
-                              rep(plotColors[5], times = 1),
-                              rep(plotColors[1], times = 4))) #Create a barplot that is horizontal (horiz = TRUE). Use axes = FALSE to remove all axes. Set xlim based on maximum percentage value. Colors correspond to broader GOSlim groupings. Save plot as a new object.
+                      col = plotColors[5]) #Create a barplot that is horizontal (horiz = TRUE). Use axes = FALSE to remove all axes. Set xlim based on maximum percentage value. Colors correspond to broader GOSlim groupings. Save plot as a new object.
 
 axis(side = 2, at = barsGOSlim, labels = parentGOBPGOslimCounts$GOSlim, tick = FALSE, las = 2, col = "grey80", cex.axis = 1.5) #Add y-axis with GOSlim terms from BPGOSlimCounts. Place labels at specific barplot values from barsGOSlim. Remove tick marks (tick) and change orientation of labels (las)
 
@@ -576,10 +573,7 @@ barsGOSlimDML <- barplot(parentGOBPDMLGOslimCounts$percentage,
                          horiz = TRUE,
                          axes = FALSE,
                          xlim = c(0,18),
-                         col = c(rep(plotColors[2], times = 5),
-                                 rep(plotColors[4], times = 3),
-                                 rep(plotColors[5], times = 1),
-                                 rep(plotColors[1], times = 4))) #Create a barplot that is horizontal (horiz = TRUE). Use axes = FALSE to remove all axes. Set xlim based on maximum percentage value. Colors correspond to broader GOSlim groupings. Save plot as a new object.
+                         col = plotColors[2]) #Create a barplot that is horizontal (horiz = TRUE). Use axes = FALSE to remove all axes. Set xlim based on maximum percentage value. Colors correspond to broader GOSlim groupings. Save plot as a new object.
 
 axis(side = 1, at = seq(from = 0, to = 18, by = 2), cex = 1.2, col = "grey80") #Add x-axis
 mtext(side = 1, "% Genes with DML", line = 3, cex = 1.5) #Add x-axis label
