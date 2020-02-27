@@ -824,7 +824,7 @@ barplot(t(t(proportionData)),
 I'm going to combine the breakdowns with the number of DML in each chromosome.
 
 ```{r}
-pdf("2019-10-03-DML-Distribution-in-Chr-Genes.pdf", width = 11, height = 8.5)
+#pdf("2019-10-03-DML-Distribution-in-Chr-Genes.pdf", width = 11, height = 8.5)
 
 plotMatrix <- matrix(c(1,1,0,3,
                        2,2,0,3),
@@ -843,7 +843,7 @@ DMLbarplot <- barplot(as.matrix(t(DMLchrCounts$DMLbyChrCpG)),
                       col = plotColors[5]) #Create a barplot and save as a new object. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis. The object contains x coordinates for bars, so xlim is set at 12 to compensate for maximum value of 11.5
 mtext(side = 1, "Chromosome", line = 3, cex = 1.3) #Add x-axis label
 axis(side = 2, line = 1.5, at = seq(0, 7e-05, by = 1e-05), labels = seq(0, 7, by = 1), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis for DML counts
-mtext(side = 2, "Number DML per 10,000 CpGs", line = 5, cex = 1.3) #Add y-axis label for DML counts
+mtext(side = 2, "Number DML per 100,000 CpGs", line = 5, cex = 1.3) #Add y-axis label for DML counts
 mtext(side = 3, line = -1, at = c(0.5, 130), text = "a.") #Add figure label
 
 #Add gene number infomration
@@ -891,7 +891,7 @@ legend(x = 0.5, y = 105.1,
        bty = "n",
        cex = 1.5) #Place a legend in the top of the figure with no box
 
-dev.off()
+#dev.off()
 ```
 
 ### Scaled DML distribution
