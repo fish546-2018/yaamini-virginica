@@ -15,6 +15,7 @@ In this script, I'll create several annotation tables for DML, perform a functio
 require(RColorBrewer)
 require(dichromat)
 require(dplyr)
+require(reshape2)
 ```
 
 # Session information
@@ -645,6 +646,49 @@ multipleDMLTotals <- multipleDMLTotals[-5,] #Remove row with totals
 head(multipleDMLTotals) #Confirm changes
 ```
 
+The calculations above were to look at number of hyper and hypomethylated DML irrespective of patterns. I want to incorporate number of DML in a gene with the direction of those DML.
+
+```{r}
+genes2DMLBreakdown$totalDML <- rep(2, times = length(genes2DMLBreakdown$type)) #Add a column with the total number of DML in a gene
+head(genes2DMLBreakdown) #Confirm formatting
+
+genes3DMLBreakdown$totalDML <- rep(3, times = length(genes3DMLBreakdown$type)) #Add a column with the total number of DML in a gene
+head(genes3DMLBreakdown) #Confirm formatting
+
+genes4DMLBreakdown$totalDML <- rep(4, times = length(genes4DMLBreakdown$type)) #Add a column with the total number of DML in a gene
+head(genes4DMLBreakdown) #Confirm formatting
+```
+
+```{r}
+combDMLBreakdown <- rbind(genes2DMLBreakdown,
+                          genes3DMLBreakdown,
+                          genes4DMLBreakdown)
+head(combDMLBreakdown) #Confirm changes
+```
+
+```{r}
+combDMLCounts <- dcast(combDMLBreakdown, type ~ totalDML, value.var = "DMLcount") #Convert long dataframe to wide
+combDMLCounts[,5] <- c(0, 0, 0, 0, 1) #Add data for one gene with 5 DML (4 hyper, 1 hypo)
+row.names(combDMLCounts) <- combDMLCounts$type #Save number of hypermethylated DML as rownames
+combDMLCounts <- combDMLCounts[,-1] #Remove first column
+colnames(combDMLCounts) <- c(2, 3, 4, 5) #Add total number of DML per gene as column names
+combDMLCounts[is.na(combDMLCounts)] <- 0 #Replace NA with 0
+head(combDMLCounts) #Confirm formatting
+```
+
+```{r}
+combDMLCounts[6,] <- 0 #Create an empty row with zeros
+nLength <- length(combDMLCounts$`2`) #Count the number of rows
+for (i in 1:nLength) {
+  combDMLCounts[6,i] <- sum(combDMLCounts[,i]) #Sum the number of DML in each category
+}
+for (i in 1:nLength) {
+    combDMLCounts[i,] <- (combDMLCounts[i,] / combDMLCounts[6,]) * 100 #Divide all entries by the total number of DML in each category and multiply by 100
+}
+combDMLCounts <- combDMLCounts[-6,] #Remove row with totals
+head(combDMLCounts) #Confirm changes
+```
+
 ##### Create individual figures
 
 I'm going to create a multipanel plot with a breakdown of the number hyper- and hypomethylated in genes. I will start by creating each figure separately.
@@ -738,6 +782,30 @@ legend("bottom",
 #dev.off()
 ```
 
+```{r}
+barplot(t(t(combDMLCounts)),
+        axes = FALSE, 
+        names.arg = c("2", "3", "4", "5"),
+        cex.names = 1.5,
+        ylim = c(0,100),
+        col = plotColors[1:5]) #Create a stacked barplot. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+mtext(side = 1, "Total DML in a Gene", line = 3, cex = 1.5) #Add x-axis label
+axis(side = 2, at = seq(0, 100, by = 10), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis
+mtext(side = 2, "Hypermethylated DML (%)", line = 3, cex = 1.5) #Add y-axis label
+
+par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE) #Create new plot
+plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n") #Add new plot on top of current plot
+legend("top",
+       legend = c("0", "1", "2", "3", "4"),
+       xpd = TRUE,
+       horiz = TRUE,
+       pch = 22, 
+        col = "black", 
+        pt.bg = plotColors[1:5],
+       bty = "n",
+       cex = 1.5) #Place a legend in the top right of the figure with no box
+```
+
 #### Create multipanel figure
 
 ##### Create color scheme
@@ -762,7 +830,7 @@ plotMatrix <- matrix(c(1,1,0,3,
                        2,2,0,3),
                      nrow = 2, ncol = 4, byrow = TRUE) #Create a matrix with plot location information. Fill matrix by row.
 par(mar = c(0, 0, 6, 2.5), oma = c(6, 8, 0, 0)) #Specify inner and outer margins
-layout(mat = plotMatrix, width = c(2, 2, 1.2, 2)) #Create a layout based on plotMatrix. The first and second plots (first column) should be wider.
+layout(mat = plotMatrix, width = c(2, 2, 1.4, 2)) #Create a layout based on plotMatrix. The first and second plots (first column) should be wider.
 #layout.show(n = 3) #Confirm layout looks good
 
 #Chromosome distribution
@@ -798,27 +866,28 @@ barplot(numberDMLinGenes$geneCount,
         ylim = c(0, 450)) #Create base plot
 axis(side = 2, las = 1, at = c(0, 450), col = "grey80", cex.axis = 1.2) #Put the axis labels only at 0 and 450.
 mtext(side = 2, "Number of Genes with DML", line = 3, cex = 1.3) #Add y-axis label
-mtext(side = 1, "Number of DML", line = 7, cex = 1.3) #Add x-axis label
+mtext(side = 1, "Number of DML", line = 3, cex = 1.3) #Add x-axis label
 mtext(side = 3, line = -1, at = c(0.15, 440), text = "b.") #Add figure label
 
 #Hyper/hypo breakdown
 #Combined hyper/hypo plot
-barplot(t(t(multipleDMLTotals)),
+barplot(t(t(combDMLCounts)),
         axes = FALSE, 
-        names.arg = c("Hyper", "Hypo"),
+        names.arg = c("2", "3", "4", "5"),
         cex.names = 1.5,
-        ylim = c(0,107),
-        col = plotColors[2:5]) #Create a stacked barplot. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
-axis(side = 2, at = seq(0, 100, by = 10), las = 2, col = "grey80", cex.axis = 1.2)
-mtext(side = 2, "DML (%)", line = 4, cex = 1.3) #Add y-axis label
-mtext(side = 3, line = -2, adj = 0, text = "  c.") #Add figure label
+        ylim = c(0,103),
+        col = plotColors[1:5]) #Create a stacked barplot. Use axes = FALSE to remove the y-axis and names.arg to set labels on the x-axis.
+mtext(side = 1, "Total DML in a Gene", line = 3, cex = 1.3) #Add x-axis label
+axis(side = 2, at = seq(0, 100, by = 10), las = 2, col = "grey80", cex.axis = 1.2) #Add y-axis
+mtext(side = 2, "Hypermethylated DML (%)", line = 4, cex = 1.3) #Add y-axis label
+mtext(side = 3, line = -1, adj = 0, text = "  c.") #Add figure label
 
-legend("top",
-       legend = c("2", "3", "4", "5"),
+legend(x = 0.5, y = 105.1,
+       legend = c("0", "1", "2", "3", "4"),
        horiz = TRUE,
        pch = 22, 
         col = "black", 
-        pt.bg = plotColors[2:5],
+        pt.bg = plotColors[1:5],
        bty = "n",
        cex = 1.5) #Place a legend in the top right of the figure with no box
 
