@@ -1012,6 +1012,15 @@ head(DMLbiomineralizationGenes) #Confirm merge
 write.csv(DMLbiomineralizationGenes, "2019-12-09-Biomineralization-Genes-with-DML.csv", row.names = FALSE, quote = FALSE) #Save file
 ```
 
+```{bash}
+cut -f19 2019-06-20-DML-Gene-Annotation.tab | sort | uniq > 2019-06-20-DML-Gene-Products.tab
+```
+
+```{bash}
+head 2019-06-20-DML-Gene-Products.tab
+wc -l 2019-06-20-DML-Gene-Products.tab
+```
+
 ### Hypermethylated DML-gene overlaps
 
 ```{r}
